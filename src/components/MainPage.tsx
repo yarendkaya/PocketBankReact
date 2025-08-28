@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import {
   Box,
   Container,
@@ -33,8 +35,12 @@ import { mainPageStyles } from '../styles/mainPageStyles'
 const MainPage = () => {
   const [isLogin, setIsLogin] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
+  const { login, register } = useAuth()
+  
   const [loginForm, setLoginForm] = useState({ 
-    customerId: '', 
+    email: '', 
     password: '' 
   })
   const [registerForm, setRegisterForm] = useState({
@@ -60,8 +66,10 @@ const MainPage = () => {
     e.preventDefault()
     const newErrors: {[key: string]: string} = {}
 
-    if (!loginForm.customerId.trim()) {
-      newErrors.customerId = 'Customer ID is required'
+    if (!loginForm.email.trim()) {
+      newErrors.email = 'Email is required'
+    } else if (!validateEmail(loginForm.email)) {
+      newErrors.email = 'Please enter a valid email'
     }
 
     if (!loginForm.password) {
@@ -71,7 +79,16 @@ const MainPage = () => {
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
-      console.log('Login attempt:', loginForm)
+      setLoading(true)
+      try {
+        await login(loginForm)
+        navigate('/dashboard')
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Login failed'
+        setErrors({ general: errorMessage })
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -101,7 +118,23 @@ const MainPage = () => {
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
-      console.log('Register attempt:', registerForm)
+      setLoading(true)
+      try {
+        const registerData = {
+          firstName: registerForm.firstName,
+          lastName: registerForm.lastName,
+          email: registerForm.email,
+          phone: registerForm.phone,
+          password: registerForm.password
+        }
+        await register(registerData)
+        navigate('/dashboard')
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Registration failed'
+        setErrors({ general: errorMessage })
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -304,14 +337,15 @@ const MainPage = () => {
                       
                       <TextField
                         fullWidth
-                        label="Customer ID"
-                        placeholder="Enter your customer ID"
+                        label="Email Address"
+                        placeholder="Enter your email address"
+                        type="email"
                         variant="outlined"
                         size="small"
-                        value={loginForm.customerId}
-                        onChange={(e) => setLoginForm({ ...loginForm, customerId: e.target.value })}
-                        error={!!errors.customerId}
-                        helperText={errors.customerId}
+                        value={loginForm.email}
+                        onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                        error={!!errors.email}
+                        helperText={errors.email}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -356,8 +390,21 @@ const MainPage = () => {
                         required
                       />
                       
-                      <Button type="submit" fullWidth variant="contained" size="medium" sx={{ mb: 2 }}>
-                        Sign In to Account
+                      {errors.general && (
+                        <Typography variant="body2" color="error" sx={{ mb: 2, textAlign: 'center' }}>
+                          {errors.general}
+                        </Typography>
+                      )}
+                      
+                      <Button 
+                        type="submit" 
+                        fullWidth 
+                        variant="contained" 
+                        size="medium" 
+                        sx={{ mb: 2 }}
+                        disabled={loading}
+                      >
+                        {loading ? 'Signing In...' : 'Sign In to Account'}
                       </Button>
                       
                       <Box sx={{ textAlign: 'center' }}>
@@ -472,8 +519,14 @@ const MainPage = () => {
                         required
                       />
                       
-                      <Button type="submit" fullWidth variant="contained" size="medium">
-                        Create Account
+                      {errors.general && (
+                        <Typography variant="body2" color="error" sx={{ mb: 2, textAlign: 'center' }}>
+                          {errors.general}
+                        </Typography>
+                      )}
+                      
+                      <Button type="submit" fullWidth variant="contained" size="medium" disabled={loading}>
+                        {loading ? 'Creating Account...' : 'Create Account'}
                       </Button>
                     </Box>
                   )}
