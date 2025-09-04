@@ -172,6 +172,7 @@ const Dashboard: React.FC = () => {
                       variant="outlined"
                       fullWidth
                       startIcon={<History />}
+                      onClick={() => navigate('/transactions')}
                       sx={{ 
                         py: 2,
                         flexDirection: 'column',
