@@ -12,7 +12,11 @@ import {
   CardContent,
   Avatar,
   Divider,
-  CircularProgress
+  CircularProgress,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent
 } from '@mui/material';
 import {
   AccountBalance,
@@ -20,7 +24,8 @@ import {
   AccountBox,
   TrendingUp,
   Payment,
-  History
+  History,
+  Add
 } from '@mui/icons-material';
 import { ThemeProvider } from '@mui/material/styles';
 import { useAuth } from '../contexts/AuthContext';
@@ -28,17 +33,37 @@ import { bankingTheme } from '../styles/theme';
 import { useNavigate } from 'react-router-dom';
 import ApiService from '../services/api';
 
+// GEREKLİ TÜM IMPORT'LAR
+import { useAccounts } from '../modules/accounts/hooks/useAccounts';
+import { AccountCard } from '../modules/accounts/components/AccountCard';
+import { AccountForm } from '../modules/accounts/components/AccountForm';
+import type { Account, AccountFormData } from '../modules/accounts/types';
+import { AddAccountMethodDialog } from '../modules/accounts/components/AddAccountMethodDialog';
+import { LinkBankDialog } from '../modules/accounts/components/LinkBankDialog';
+import { SelectLinkedAccountsDialog } from '../modules/accounts/components/SelectLinkedAccountsDialog';
+
 interface BalanceData {
   balance: number;
   currency: string;
 }
 
 const Dashboard: React.FC = () => {
+  // ORİJİNAL STATE'LERİNİZ
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [balance, setBalance] = useState<BalanceData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // GEREKLİ YENİ STATE'LER VE HOOK'LAR
+  const { accounts, loading: accountsLoading, error: accountsError, createAccount, updateAccount, deleteAccount, refetch: refetchAccounts } = useAccounts();
+  const [isMethodSelectionOpen, setIsMethodSelectionOpen] = useState(false);
+  const [isManualFormOpen, setIsManualFormOpen] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [linkedAccounts, setLinkedAccounts] = useState<Account[]>([]);
+  const [isAccountSelectionOpen, setIsAccountSelectionOpen] = useState(false);
+  const [isLinkingOpen, setIsLinkingOpen] = useState(false);
+
+  // ORİJİNAL FONKSİYONLARINIZ
   useEffect(() => {
     loadDashboardData();
   }, []);
@@ -59,6 +84,67 @@ const Dashboard: React.FC = () => {
     navigate('/login');
   };
 
+  // GEREKLİ YENİ FONKSİYONLAR
+  const handleEdit = (account: Account) => {
+    setEditingAccount(account);
+    setIsManualFormOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Bu hesabı silmek istediğinizden emin misiniz?')) {
+      await deleteAccount(id);
+    }
+  };
+  
+  const handleCloseForm = () => {
+    setIsManualFormOpen(false);
+    setEditingAccount(null);
+  };
+
+  const handleFormSubmit = async (data: AccountFormData) => {
+    if (editingAccount) {
+      await updateAccount(editingAccount.id, data);
+    } else {
+      await createAccount(data);
+    }
+    handleCloseForm();
+  };
+
+  const handleSelectMethod = (method: 'manual' | 'link') => {
+    setIsMethodSelectionOpen(false);
+    if (method === 'manual') {
+      setEditingAccount(null);
+      setIsManualFormOpen(true);
+    }
+    if (method === 'link') {
+   setIsLinkingOpen(true); // Yeni pencereyi aç
+ }
+  };
+  const handleLinkBankAccount = async (bank: string, username: string, password: string) => {
+    try {
+      const result = await ApiService.linkBankAccount(bank, username, password);
+      setLinkedAccounts(result); // 'linkedAccounts' ve 'setLinkedAccounts' burada kullanılıyor
+      setIsLinkingOpen(false);   // 'isLinkingOpen' burada kullanılıyor
+      setIsAccountSelectionOpen(true); // 'isAccountSelectionOpen' burada kullanılıyor
+    } catch (error) {
+      console.error("Failed to link bank account:", error);
+      alert(`Banka hesabına bağlanırken bir hata oluştu.`);
+      setIsLinkingOpen(false);
+    }
+  };
+
+  const handleAddSelectedAccounts = async (selectedAccounts: AccountFormData[]) => {
+    try {
+        await Promise.all(selectedAccounts.map(acc => createAccount(acc)));
+        setIsAccountSelectionOpen(false); // 'setIsAccountSelectionOpen' burada kullanılıyor
+        refetchAccounts();
+    } catch(error) {
+        console.error("Failed to add selected accounts:", error);
+        alert('Seçilen hesaplar eklenirken bir hata oluştu.');
+        refetchAccounts();
+    }
+  };
+
   if (loading) {
     return (
       <ThemeProvider theme={bankingTheme}>
@@ -72,85 +158,44 @@ const Dashboard: React.FC = () => {
   return (
     <ThemeProvider theme={bankingTheme}>
       <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        {/* Header */}
-        <AppBar 
-          position="static" 
-          elevation={0} 
-          sx={{ 
-            bgcolor: 'white', 
-            borderBottom: '1px solid #e0e0e0',
-            py: 1
-          }}
-        >
+        {/* ORİJİNAL HEADER'INIZ (DEĞİŞTİRİLMEDİ) */}
+        <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', borderBottom: '1px solid #e0e0e0', py: 1 }}>
           <Container maxWidth="xl">
             <Toolbar sx={{ px: 0 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
                 <AccountBalance sx={{ color: 'primary.main', fontSize: 36, mr: 2 }} />
-                <Typography 
-                  variant="h4" 
-                  sx={{ 
-                    color: 'primary.main', 
-                    fontWeight: 700,
-                    letterSpacing: -0.5
-                  }}
-                >
-                  PocketBank
-                </Typography>
+                <Typography variant="h4" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: -0.5 }}>PocketBank</Typography>
               </Box>
-              
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
-                  {user?.firstName?.[0]}{user?.lastName?.[0]}
-                </Avatar>
-                <Typography variant="body2" sx={{ color: 'text.primary' }}>
-                  {user?.firstName} {user?.lastName}
-                </Typography>
-                <Button
-                  startIcon={<Logout />}
-                  onClick={handleLogout}
-                  sx={{ color: 'text.secondary' }}
-                >
-                  Logout
-                </Button>
+                <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>{user?.firstName?.[0]}{user?.lastName?.[0]}</Avatar>
+                <Typography variant="body2" sx={{ color: 'text.primary' }}>{user?.firstName} {user?.lastName}</Typography>
+                <Button startIcon={<Logout />} onClick={handleLogout} sx={{ color: 'text.secondary' }}>Logout</Button>
               </Box>
             </Toolbar>
           </Container>
         </AppBar>
 
-        {/* Main Content */}
         <Container maxWidth="xl" sx={{ py: 4 }}>
           <Typography variant="h4" sx={{ mb: 4, fontWeight: 600 }}>
             Welcome back, {user?.firstName}!
           </Typography>
 
+          {/* ORİJİNAL PANELLERİNİZ (DEĞİŞTİRİLMEDİ) */}
           <Grid container spacing={4}>
-            {/* Balance Card */}
             <Grid item xs={12} md={4}>
-              <Card sx={{ 
-                background: 'linear-gradient(135deg, #e3068b 0%, #c70577 100%)',
-                color: 'white',
-                height: '200px'
-              }}>
+              <Card sx={{ background: 'linear-gradient(135deg, #e3068b 0%, #c70577 100%)', color: 'white', height: '200px' }}>
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" sx={{ mb: 2, opacity: 0.9 }}>
-                    Account Balance
-                  </Typography>
+                  <Typography variant="h6" sx={{ mb: 2, opacity: 0.9 }}>Account Balance</Typography>
                   <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
                     {balance ? `${balance.currency} ${balance.balance.toLocaleString()}` : '---'}
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                    Available Balance
-                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.8 }}>Available Balance</Typography>
                 </CardContent>
               </Card>
             </Grid>
-
-            {/* Quick Actions */}
             <Grid item xs={12} md={8}>
               <Paper sx={{ p: 3, height: '200px' }}>
-                <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-                  Quick Actions
-                </Typography>
+                <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>Quick Actions</Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={6} sm={3}>
                     <Button
@@ -216,37 +261,18 @@ const Dashboard: React.FC = () => {
                 </Grid>
               </Paper>
             </Grid>
-
-            {/* Account Info */}
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                  Account Information
-                </Typography>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Account Information</Typography>
                 <Divider sx={{ mb: 2 }} />
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">Email</Typography>
-                  <Typography variant="body1">{user?.email}</Typography>
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="body2" color="text.secondary">Name</Typography>
-                  <Typography variant="body1">{user?.firstName} {user?.lastName}</Typography>
-                </Box>
-                {user?.phone && (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">Phone</Typography>
-                    <Typography variant="body1">{user.phone}</Typography>
-                  </Box>
-                )}
+                <Box sx={{ mb: 2 }}><Typography variant="body2" color="text.secondary">Email</Typography><Typography variant="body1">{user?.email}</Typography></Box>
+                <Box sx={{ mb: 2 }}><Typography variant="body2" color="text.secondary">Name</Typography><Typography variant="body1">{user?.firstName} {user?.lastName}</Typography></Box>
+                {user?.phone && (<Box sx={{ mb: 2 }}><Typography variant="body2" color="text.secondary">Phone</Typography><Typography variant="body1">{user.phone}</Typography></Box>)}
               </Paper>
             </Grid>
-
-            {/* Recent Activity Placeholder */}
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                  Recent Activity
-                </Typography>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Recent Activity</Typography>
                 <Divider sx={{ mb: 2 }} />
                 <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
                   No recent transactions
@@ -254,7 +280,62 @@ const Dashboard: React.FC = () => {
               </Paper>
             </Grid>
           </Grid>
+          
+          {/* YENİ "MY ACCOUNTS" BÖLÜMÜ (SADECE EKLENDİ) */}
+          <Box sx={{ mt: 5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h5" fontWeight={500}>My Accounts</Typography>
+              <Button variant="contained" startIcon={<Add />} onClick={() => setIsMethodSelectionOpen(true)}>Add New Account</Button>
+            </Box>
+            {accountsLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>
+            ) : accountsError ? (
+              <Alert severity="error">{accountsError}</Alert>
+            ) : (
+              <Grid container spacing={3}>
+                {accounts.map(account => (
+                  <Grid item xs={12} sm={6} md={4} key={account.id}>
+                    <AccountCard account={account} onEdit={handleEdit} onDelete={handleDelete} />
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </Box>
         </Container>
+
+        {/* YENİ PENCERELER (SADECE EKLENDİ) */}
+        <AddAccountMethodDialog
+          open={isMethodSelectionOpen}
+          onClose={() => setIsMethodSelectionOpen(false)}
+          onSelectMethod={handleSelectMethod}
+        />
+        <Dialog open={isManualFormOpen} onClose={handleCloseForm} maxWidth="sm" fullWidth>
+          <DialogTitle>{editingAccount ? 'Edit Account' : 'Add a New Account Manually'}</DialogTitle>
+          <DialogContent sx={{ pt: '20px !important' }}>
+            <AccountForm
+              onSubmit={handleFormSubmit}
+              onCancel={handleCloseForm}
+              loading={accountsLoading}
+              initialData={editingAccount} 
+            />
+          </DialogContent>
+        </Dialog>
+        {/* BU BÖLÜMÜ EKLEYİN */}
+        <LinkBankDialog
+          open={isLinkingOpen} // 'isLinkingOpen' burada kullanılıyor
+          onClose={() => setIsLinkingOpen(false)}
+          onLink={handleLinkBankAccount}
+          loading={accountsLoading}
+        />
+        
+        <SelectLinkedAccountsDialog
+          open={isAccountSelectionOpen} // 'isAccountSelectionOpen' burada kullanılıyor
+          onClose={() => setIsAccountSelectionOpen(false)}
+          accounts={linkedAccounts} // 'linkedAccounts' burada kullanılıyor
+          onAdd={handleAddSelectedAccounts}
+          loading={accountsLoading}
+        /> 
+
       </Box>
     </ThemeProvider>
   );
