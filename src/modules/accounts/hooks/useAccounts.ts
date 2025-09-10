@@ -87,7 +87,7 @@ export const useAccounts = () => {
     accounts, 
     loading, 
     error, 
-    refetchAccounts: fetchAccounts,
+    refetch: fetchAccounts, 
     createAccount,  // <-- YENİ
     updateAccount,  // <-- YENİ
     deleteAccount   // <-- YENİ

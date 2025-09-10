@@ -40,6 +40,7 @@ import { AccountForm } from '../modules/accounts/components/AccountForm';
 import type { Account, AccountFormData } from '../modules/accounts/types';
 import { AddAccountMethodDialog } from '../modules/accounts/components/AddAccountMethodDialog';
 import { LinkBankDialog } from '../modules/accounts/components/LinkBankDialog';
+import { SelectLinkedAccountsDialog } from '../modules/accounts/components/SelectLinkedAccountsDialog';
 
 interface BalanceData {
   balance: number;
@@ -54,10 +55,12 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   // GEREKLİ YENİ STATE'LER VE HOOK'LAR
-  const { accounts, loading: accountsLoading, error: accountsError, createAccount, updateAccount, deleteAccount } = useAccounts();
+  const { accounts, loading: accountsLoading, error: accountsError, createAccount, updateAccount, deleteAccount, refetch: refetchAccounts } = useAccounts();
   const [isMethodSelectionOpen, setIsMethodSelectionOpen] = useState(false);
   const [isManualFormOpen, setIsManualFormOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [linkedAccounts, setLinkedAccounts] = useState<Account[]>([]);
+  const [isAccountSelectionOpen, setIsAccountSelectionOpen] = useState(false);
   const [isLinkingOpen, setIsLinkingOpen] = useState(false);
 
   // ORİJİNAL FONKSİYONLARINIZ
@@ -116,6 +119,30 @@ const Dashboard: React.FC = () => {
     if (method === 'link') {
    setIsLinkingOpen(true); // Yeni pencereyi aç
  }
+  };
+  const handleLinkBankAccount = async (bank: string, username: string, password: string) => {
+    try {
+      const result = await ApiService.linkBankAccount(bank, username, password);
+      setLinkedAccounts(result); // 'linkedAccounts' ve 'setLinkedAccounts' burada kullanılıyor
+      setIsLinkingOpen(false);   // 'isLinkingOpen' burada kullanılıyor
+      setIsAccountSelectionOpen(true); // 'isAccountSelectionOpen' burada kullanılıyor
+    } catch (error) {
+      console.error("Failed to link bank account:", error);
+      alert(`Banka hesabına bağlanırken bir hata oluştu.`);
+      setIsLinkingOpen(false);
+    }
+  };
+
+  const handleAddSelectedAccounts = async (selectedAccounts: AccountFormData[]) => {
+    try {
+        await Promise.all(selectedAccounts.map(acc => createAccount(acc)));
+        setIsAccountSelectionOpen(false); // 'setIsAccountSelectionOpen' burada kullanılıyor
+        refetchAccounts();
+    } catch(error) {
+        console.error("Failed to add selected accounts:", error);
+        alert('Seçilen hesaplar eklenirken bir hata oluştu.');
+        refetchAccounts();
+    }
   };
 
   if (loading) {
@@ -236,6 +263,22 @@ const Dashboard: React.FC = () => {
             />
           </DialogContent>
         </Dialog>
+        {/* BU BÖLÜMÜ EKLEYİN */}
+        <LinkBankDialog
+          open={isLinkingOpen} // 'isLinkingOpen' burada kullanılıyor
+          onClose={() => setIsLinkingOpen(false)}
+          onLink={handleLinkBankAccount}
+          loading={accountsLoading}
+        />
+        
+        <SelectLinkedAccountsDialog
+          open={isAccountSelectionOpen} // 'isAccountSelectionOpen' burada kullanılıyor
+          onClose={() => setIsAccountSelectionOpen(false)}
+          accounts={linkedAccounts} // 'linkedAccounts' burada kullanılıyor
+          onAdd={handleAddSelectedAccounts}
+          loading={accountsLoading}
+        /> 
+
       </Box>
     </ThemeProvider>
   );

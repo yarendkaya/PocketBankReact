@@ -1,12 +1,43 @@
-// src/services/api.ts (TAM VE HATASIZ SON HALİ)
+// src/services/api.ts
 
-// Tipleri "import type" ile alarak belirsizliği ortadan kaldırıyoruz.
-import type { TransactionFilters,} from '../modules/transactions/types';
+import type { TransactionFilters } from '../modules/transactions/types';
 import type { Account, AccountFormData } from '../modules/accounts/types';
+
 
 const API_BASE_URL = 'https://localhost:7170'; // Backend URL'niz
 
-// ... Diğer interface tanımlamalarınız (LoginCredentials, RegisterData vb.) burada kalabilir ...
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+interface RegisterData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  password: string;
+}
+
+interface AuthResponse {
+  token: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
+interface UserProfile {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+}
+
+interface BalanceResponse {
+  balance: number;
+  currency: string;
+}
+
 
 class ApiService {
   private baseURL: string;
@@ -47,12 +78,7 @@ class ApiService {
         return null as T;
       }
 
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        return response.json();
-      }
-      
-      return response.text() as T;
+      return response.json();
     } catch (error) {
       if (error instanceof Error) {
         throw error;
@@ -62,60 +88,70 @@ class ApiService {
   }
 
   // Auth methods
-  async register(userData: any): Promise<any> {
-    return this.request<any>('/api/auth/register', {
+  async register(userData: RegisterData): Promise<AuthResponse> {
+    return this.request<AuthResponse>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
   }
 
-  async login(credentials: any): Promise<any> {
-    return this.request<any>('/api/auth/login', {
+  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    return this.request<AuthResponse>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
   }
 
   // User methods
-  async getProfile(): Promise<any> {
-    return this.request<any>('/api/user/profile');
+  async getProfile(): Promise<UserProfile> {
+    return this.request<UserProfile>('/api/user/profile');
   }
   
-  async getBalance(): Promise<any> {
-    return this.request<any>('/api/user/balance');
+  async getBalance(): Promise<BalanceResponse> {
+    return this.request<BalanceResponse>('/api/user/balance');
   }
 
-   // Account Methods
+  // Account Methods
   async getAccounts(): Promise<Account[]> {
-    // URL'yi backend controller'ınıza uygun olarak "Account" şeklinde güncelliyoruz.
     return this.request<Account[]>('/api/Account'); 
   }
 
   async createAccount(data: AccountFormData): Promise<Account> {
-    return this.request<Account>('/api/Account', { // Burayı da güncelliyoruz
+    return this.request<Account>('/api/Account', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   async updateAccount(id: string, data: Partial<AccountFormData>): Promise<Account> {
-    return this.request<Account>(`/api/Account/${id}`, { // Burayı da güncelliyoruz
+    return this.request<Account>(`/api/Account/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   async deleteAccount(id: string): Promise<void> {
-    await this.request<void>(`/api/Account/${id}`, { // Burayı da güncelliyoruz
+    await this.request<void>(`/api/Account/${id}`, {
       method: 'DELETE',
     });
   }
+  
+  
+  
+async linkBankAccount(bank: string, username: string, password: string): Promise<any[]> {
+    return this.request<any[]>('/api/Account/link-bank', {
+        method: 'POST',
+        body: JSON.stringify({ bank, username, password }),
+    });
+}
   // Transaction methods
   async getTransactions(page: number = 1, limit: number = 10, filters: TransactionFilters = {}) {
      const queryParams = new URLSearchParams({
         page: String(page),
         limit: String(limit),
       });
+
+      // Hatalı `linkBankAccount` metodu buradan çıkarıldı.
 
       // Filterları güvenli bir şekilde işle ve URL'e ekle
       Object.entries(filters).forEach(([key, value]) => {
@@ -126,6 +162,7 @@ class ApiService {
       
     return this.request(`/api/transactions?${queryParams.toString()}`);
   }
-}
+
+} // <--- Sınıfın bittiği yer
 
 export default new ApiService();

@@ -19,7 +19,7 @@ import {
 interface LinkBankDialogProps {
   open: boolean;
   onClose: () => void;
-  onLink: (bank: string, username: string) => Promise<void>; // Simülasyonu tetikleyecek fonksiyon
+onLink: (bank: string, username: string, password: string) => Promise<void>;
   loading?: boolean;
 }
 
@@ -29,8 +29,8 @@ export const LinkBankDialog: React.FC<LinkBankDialogProps> = ({ open, onClose, o
   const [password, setPassword] = useState('123456'); // Şifre sadece görsel, kullanılmayacak
 
   const handleLink = () => {
-    onLink(bank, username);
-  };
+  onLink(bank, username, password);
+};
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
