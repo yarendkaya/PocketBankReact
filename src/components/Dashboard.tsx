@@ -197,10 +197,67 @@ const Dashboard: React.FC = () => {
               <Paper sx={{ p: 3, height: '200px' }}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>Quick Actions</Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6} sm={3}><Button variant="outlined" fullWidth startIcon={<Payment />} sx={{ py: 2, flexDirection: 'column', gap: 1, height: 'auto' }}><Typography variant="body2">Transfer Money</Typography></Button></Grid>
-                  <Grid item xs={6} sm={3}><Button variant="outlined" fullWidth startIcon={<History />} onClick={() => navigate('/transactions')} sx={{ py: 2, flexDirection: 'column', gap: 1, height: 'auto' }}><Typography variant="body2">Transaction History</Typography></Button></Grid>
-                  <Grid item xs={6} sm={3}><Button variant="outlined" fullWidth startIcon={<TrendingUp />} sx={{ py: 2, flexDirection: 'column', gap: 1, height: 'auto' }}><Typography variant="body2">Investments</Typography></Button></Grid>
-                  <Grid item xs={6} sm={3}><Button variant="outlined" fullWidth startIcon={<AccountBox />} sx={{ py: 2, flexDirection: 'column', gap: 1, height: 'auto' }}><Typography variant="body2">Account Settings</Typography></Button></Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      startIcon={<Payment />}
+                      sx={{ 
+                        py: 2,
+                        flexDirection: 'column',
+                        gap: 1,
+                        height: 'auto'
+                      }}
+                    >
+                      <Typography variant="body2">Transfer Money</Typography>
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      startIcon={<History />}
+                      onClick={() => navigate('/transactions')}
+                      sx={{ 
+                        py: 2,
+                        flexDirection: 'column',
+                        gap: 1,
+                        height: 'auto'
+                      }}
+                    >
+                      <Typography variant="body2">Transaction History</Typography>
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      startIcon={<TrendingUp />}
+                      sx={{ 
+                        py: 2,
+                        flexDirection: 'column',
+                        gap: 1,
+                        height: 'auto'
+                      }}
+                    >
+                      <Typography variant="body2">Investments</Typography>
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      startIcon={<AccountBox />}
+                      sx={{ 
+                        py: 2,
+                        flexDirection: 'column',
+                        gap: 1,
+                        height: 'auto'
+                      }}
+                    >
+                      <Typography variant="body2">Account Settings</Typography>
+                    </Button>
+                  </Grid>
                 </Grid>
               </Paper>
             </Grid>
