@@ -54,11 +54,11 @@ export const RegisterForm = ({ onSubmit, errors, loading }: RegisterFormProps) =
       <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333', mb: 1 }}>
         Hesap Oluştur
       </Typography>
-      <Typography variant="body2" sx={{ color: '#666', mb: 3 }}>
+      <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
         PocketBank ailesine katılın
       </Typography>
 
-      <Grid container spacing={2}>
+      <Grid container spacing={1} sx={{ mb: 1.5 }}>
         <Grid item xs={6}>
           <TextField
             fullWidth
@@ -89,7 +89,7 @@ export const RegisterForm = ({ onSubmit, errors, loading }: RegisterFormProps) =
 
       <TextField
         fullWidth
-        label="E-posta Adresi"
+        label="E-posta"
         type="email"
         variant="outlined"
         size="small"
@@ -104,13 +104,13 @@ export const RegisterForm = ({ onSubmit, errors, loading }: RegisterFormProps) =
             </InputAdornment>
           ),
         }}
-        sx={{ mb: 2 }}
+        sx={{ mb: 1.5 }}
         required
       />
 
       <TextField
         fullWidth
-        label="Telefon Numarası"
+        label="Telefon"
         variant="outlined"
         size="small"
         value={formData.phone}
@@ -124,7 +124,7 @@ export const RegisterForm = ({ onSubmit, errors, loading }: RegisterFormProps) =
             </InputAdornment>
           ),
         }}
-        sx={{ mb: 2 }}
+        sx={{ mb: 1.5 }}
         required
       />
 
@@ -137,7 +137,7 @@ export const RegisterForm = ({ onSubmit, errors, loading }: RegisterFormProps) =
         value={formData.password}
         onChange={handleChange('password')}
         error={!!errors.password}
-        helperText={errors.password || 'Minimum 8 karakter'}
+        helperText={errors.password}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -156,7 +156,7 @@ export const RegisterForm = ({ onSubmit, errors, loading }: RegisterFormProps) =
             </InputAdornment>
           ),
         }}
-        sx={{ mb: 2 }}
+        sx={{ mb: 1.5 }}
         required
       />
 
@@ -177,7 +177,7 @@ export const RegisterForm = ({ onSubmit, errors, loading }: RegisterFormProps) =
             </InputAdornment>
           ),
         }}
-        sx={{ mb: 2 }}
+        sx={{ mb: 3 }}
         required
       />
 

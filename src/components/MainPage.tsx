@@ -31,7 +31,7 @@ const MainPage = () => {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { login, register } = useAuth()
-  const [errors, setErrors] = useState<{[key: string]: string}>({})
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
   const handleLogin = async (email: string, password: string) => {
     const validationErrors = validateLoginForm(email, password)
@@ -43,7 +43,8 @@ const MainPage = () => {
         await login({ email, password })
         navigate('/dashboard')
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : 'Giriş başarısız'
+        const errorMessage =
+          error instanceof Error ? error.message : 'Giriş başarısız'
         setErrors({ general: errorMessage })
       } finally {
         setLoading(false)
@@ -75,7 +76,8 @@ const MainPage = () => {
         await register(data)
         navigate('/dashboard')
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : 'Kayıt başarısız'
+        const errorMessage =
+          error instanceof Error ? error.message : 'Kayıt başarısız'
         setErrors({ general: errorMessage })
       } finally {
         setLoading(false)
@@ -91,7 +93,10 @@ const MainPage = () => {
 
       {/* Breadcrumb */}
       <Container maxWidth="xl" sx={{ py: 2 }}>
-        <Breadcrumbs separator={<NavigateNext fontSize="small" />} sx={{ fontSize: '0.875rem' }}>
+        <Breadcrumbs
+          separator={<NavigateNext fontSize="small" />}
+          sx={{ fontSize: '0.875rem' }}
+        >
           <Link underline="hover" color="inherit" href="#" sx={{ color: '#666' }}>
             Ana Sayfa
           </Link>
@@ -110,13 +115,22 @@ const MainPage = () => {
           {/* Left Column - Information */}
           <Grid item xs={12} lg={8}>
             <Box sx={{ pr: { lg: 4 } }}>
-              <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#333', mb: 2 }}>
+              <Typography
+                variant="h4"
+                gutterBottom
+                sx={{ fontWeight: 'bold', color: '#333', mb: 2 }}
+              >
                 PocketBank Dijital Bankacılığa Hoş Geldiniz
               </Typography>
 
-              <Typography variant="body1" paragraph sx={{ color: '#666', lineHeight: 1.6, mb: 3 }}>
-                Modern bankacılığın tüm imkanlarını dijital platformumuzla deneyimleyin.
-                Finansal işlemlerinizi güvenle, her yerden, her zaman yönetin.
+              <Typography
+                variant="body1"
+                paragraph
+                sx={{ color: '#666', lineHeight: 1.6, mb: 3 }}
+              >
+                Modern bankacılığın tüm imkanlarını dijital platformumuzla
+                deneyimleyin. Finansal işlemlerinizi güvenle, her yerden, her zaman
+                yönetin.
               </Typography>
 
               <SecurityCard />
@@ -129,75 +143,111 @@ const MainPage = () => {
             <Box sx={{ position: 'sticky', top: 24 }}>
               {/* Form Selection Tabs */}
               <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid item xs={6}>
+                <Grid item xs={6} sx={{ display: 'flex' }}>
                   <Card
                     elevation={0}
                     sx={{
-                      p: 1.5,
+                      flex: 1,
+                      p: 1,
                       textAlign: 'center',
                       cursor: 'pointer',
                       position: 'relative',
-                      border: isLogin ? '2px solid #d32f2f' : '2px solid #e0e0e0',
+                      border: isLogin
+                        ? '2px solid #d32f2f'
+                        : '2px solid #e0e0e0',
                       bgcolor: isLogin ? '#fafafa' : 'white',
                       transition: 'all 0.3s'
                     }}
                     onClick={() => setIsLogin(true)}
                   >
-                    <Typography variant="subtitle1" sx={{
-                      fontWeight: 'bold',
-                      color: isLogin ? '#d32f2f' : '#666',
-                      mb: 0.5
-                    }}>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontWeight: 'bold',
+                        color: isLogin ? '#d32f2f' : '#666',
+                        mb: 0.25,
+                        fontSize: '0.95rem'
+                      }}
+                    >
                       Giriş Yap
                     </Typography>
-                    <Typography variant="caption" sx={{ color: '#666' }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#666',
+                        fontSize: '0.7rem',
+                        display: 'block',
+                        textAlign: 'center',
+                        minHeight: 20
+                      }}
+                    >
                       Hesabınız var mı?
                     </Typography>
                     {isLogin && (
-                      <Box sx={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: 3,
-                        bgcolor: '#d32f2f'
-                      }} />
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 3,
+                          bgcolor: '#d32f2f'
+                        }}
+                      />
                     )}
                   </Card>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item xs={6} sx={{ display: 'flex' }}>
                   <Card
                     elevation={0}
                     sx={{
-                      p: 1.5,
+                      flex: 1,
+                      p: 1,
                       textAlign: 'center',
                       cursor: 'pointer',
                       position: 'relative',
-                      border: !isLogin ? '2px solid #d32f2f' : '2px solid #e0e0e0',
+                      border: !isLogin
+                        ? '2px solid #d32f2f'
+                        : '2px solid #e0e0e0',
                       bgcolor: !isLogin ? '#fafafa' : 'white',
                       transition: 'all 0.3s'
                     }}
                     onClick={() => setIsLogin(false)}
                   >
-                    <Typography variant="subtitle1" sx={{
-                      fontWeight: 'bold',
-                      color: !isLogin ? '#d32f2f' : '#666',
-                      mb: 0.5
-                    }}>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontWeight: 'bold',
+                        color: !isLogin ? '#d32f2f' : '#666',
+                        mb: 0.25,
+                        fontSize: '0.95rem'
+                      }}
+                    >
                       Kayıt Ol
                     </Typography>
-                    <Typography variant="caption" sx={{ color: '#666' }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#666',
+                        fontSize: '0.68rem',
+                        display: 'block',
+                        textAlign: 'center',
+                        minHeight: 20
+                      }}
+                    >
                       PocketBank'ta yeni misiniz?
                     </Typography>
                     {!isLogin && (
-                      <Box sx={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: 3,
-                        bgcolor: '#d32f2f'
-                      }} />
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 3,
+                          bgcolor: '#d32f2f'
+                        }}
+                      />
                     )}
                   </Card>
                 </Grid>
@@ -208,7 +258,11 @@ const MainPage = () => {
                 {isLogin ? (
                   <LoginForm onSubmit={handleLogin} errors={errors} loading={loading} />
                 ) : (
-                  <RegisterForm onSubmit={handleRegister} errors={errors} loading={loading} />
+                  <RegisterForm
+                    onSubmit={handleRegister}
+                    errors={errors}
+                    loading={loading}
+                  />
                 )}
               </Card>
             </Box>
