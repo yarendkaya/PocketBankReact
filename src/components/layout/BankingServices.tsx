@@ -22,6 +22,9 @@ export const BankingServices = () => {
                 textAlign: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.3s',
+                minHeight: '120px',
+                display: 'flex',
+                flexDirection: 'column',
                 '&:hover': {
                   transform: 'translateY(-2px)',
                   boxShadow: 2
