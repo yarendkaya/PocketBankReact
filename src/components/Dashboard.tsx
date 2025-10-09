@@ -157,19 +157,48 @@ const Dashboard: React.FC = () => {
 
   return (
     <ThemeProvider theme={bankingTheme}>
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-        {/* ORİJİNAL HEADER'INIZ (DEĞİŞTİRİLMEDİ) */}
-        <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', borderBottom: '1px solid #e0e0e0', py: 1 }}>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+        {/* Top Bar */}
+        <Box sx={{ bgcolor: '#f5f5f5', borderBottom: '1px solid #e0e0e0' }}>
           <Container maxWidth="xl">
-            <Toolbar sx={{ px: 0 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-                <AccountBalance sx={{ color: 'primary.main', fontSize: 36, mr: 2 }} />
-                <Typography variant="h4" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: -0.5 }}>PocketBank</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Typography variant="body2" sx={{ color: '#666', fontSize: '0.875rem' }}>
+                  Welcome, {user?.firstName}
+                </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>{user?.firstName?.[0]}{user?.lastName?.[0]}</Avatar>
-                <Typography variant="body2" sx={{ color: 'text.primary' }}>{user?.firstName} {user?.lastName}</Typography>
-                <Button startIcon={<Logout />} onClick={handleLogout} sx={{ color: 'text.secondary' }}>Logout</Button>
+                <Avatar sx={{ bgcolor: '#d32f2f', width: 32, height: 32 }}>
+                  {user?.firstName?.[0]}{user?.lastName?.[0]}
+                </Avatar>
+                <Button
+                  startIcon={<Logout />}
+                  onClick={handleLogout}
+                  size="small"
+                  sx={{ color: '#666' }}
+                >
+                  Logout
+                </Button>
+              </Box>
+            </Box>
+          </Container>
+        </Box>
+
+        {/* Main Header */}
+        <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', borderBottom: '1px solid #e0e0e0' }}>
+          <Container maxWidth="xl">
+            <Toolbar sx={{ px: 0, py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                <AccountBalance sx={{ fontSize: 40, color: '#d32f2f', mr: 2 }} />
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#d32f2f', fontSize: '2rem' }}>
+                  PocketBank
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+                <Button sx={{ color: '#333', fontWeight: 500 }}>Dashboard</Button>
+                <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/transactions')}>Transactions</Button>
+                <Button sx={{ color: '#333', fontWeight: 500 }}>Accounts</Button>
+                <Button sx={{ color: '#333', fontWeight: 500 }}>Settings</Button>
               </Box>
             </Toolbar>
           </Container>
@@ -180,10 +209,15 @@ const Dashboard: React.FC = () => {
             Welcome back, {user?.firstName}!
           </Typography>
 
-          {/* ORİJİNAL PANELLERİNİZ (DEĞİŞTİRİLMEDİ) */}
+          {/* Account Overview Section */}
           <Grid container spacing={4}>
             <Grid item xs={12} md={4}>
-              <Card sx={{ background: 'linear-gradient(135deg, #e3068b 0%, #c70577 100%)', color: 'white', height: '200px' }}>
+              <Card sx={{
+                background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
+                color: 'white',
+                height: '200px',
+                border: '1px solid #e0e0e0'
+              }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" sx={{ mb: 2, opacity: 0.9 }}>Account Balance</Typography>
                   <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
@@ -194,98 +228,137 @@ const Dashboard: React.FC = () => {
               </Card>
             </Grid>
             <Grid item xs={12} md={8}>
-              <Paper sx={{ p: 3, height: '200px' }}>
-                <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>Quick Actions</Typography>
+              <Paper sx={{ p: 3, height: '200px', border: '1px solid #e0e0e0' }}>
+                <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: '#333' }}>Quick Actions</Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={6} sm={3}>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<Payment />}
-                      sx={{ 
-                        py: 2,
-                        flexDirection: 'column',
-                        gap: 1,
-                        height: 'auto'
-                      }}
-                    >
-                      <Typography variant="body2">Transfer Money</Typography>
-                    </Button>
+                    <Card sx={{
+                      textAlign: 'center',
+                      p: 2,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                      border: '1px solid #e0e0e0',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: 2,
+                        borderColor: '#d32f2f'
+                      }
+                    }}>
+                      <Box sx={{ color: '#d32f2f', mb: 1 }}>
+                        <Payment />
+                      </Box>
+                      <Typography variant="body2" fontWeight={500}>Transfer</Typography>
+                    </Card>
                   </Grid>
                   <Grid item xs={6} sm={3}>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<History />}
+                    <Card
                       onClick={() => navigate('/transactions')}
-                      sx={{ 
-                        py: 2,
-                        flexDirection: 'column',
-                        gap: 1,
-                        height: 'auto'
+                      sx={{
+                        textAlign: 'center',
+                        p: 2,
+                        cursor: 'pointer',
+                        transition: 'all 0.3s',
+                        border: '1px solid #e0e0e0',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: 2,
+                          borderColor: '#d32f2f'
+                        }
                       }}
                     >
-                      <Typography variant="body2">Transaction History</Typography>
-                    </Button>
+                      <Box sx={{ color: '#d32f2f', mb: 1 }}>
+                        <History />
+                      </Box>
+                      <Typography variant="body2" fontWeight={500}>History</Typography>
+                    </Card>
                   </Grid>
                   <Grid item xs={6} sm={3}>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<TrendingUp />}
-                      sx={{ 
-                        py: 2,
-                        flexDirection: 'column',
-                        gap: 1,
-                        height: 'auto'
-                      }}
-                    >
-                      <Typography variant="body2">Investments</Typography>
-                    </Button>
+                    <Card sx={{
+                      textAlign: 'center',
+                      p: 2,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                      border: '1px solid #e0e0e0',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: 2,
+                        borderColor: '#d32f2f'
+                      }
+                    }}>
+                      <Box sx={{ color: '#d32f2f', mb: 1 }}>
+                        <TrendingUp />
+                      </Box>
+                      <Typography variant="body2" fontWeight={500}>Investments</Typography>
+                    </Card>
                   </Grid>
                   <Grid item xs={6} sm={3}>
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<AccountBox />}
-                      sx={{ 
-                        py: 2,
-                        flexDirection: 'column',
-                        gap: 1,
-                        height: 'auto'
-                      }}
-                    >
-                      <Typography variant="body2">Account Settings</Typography>
-                    </Button>
+                    <Card sx={{
+                      textAlign: 'center',
+                      p: 2,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                      border: '1px solid #e0e0e0',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: 2,
+                        borderColor: '#d32f2f'
+                      }
+                    }}>
+                      <Box sx={{ color: '#d32f2f', mb: 1 }}>
+                        <AccountBox />
+                      </Box>
+                      <Typography variant="body2" fontWeight={500}>Settings</Typography>
+                    </Card>
                   </Grid>
                 </Grid>
               </Paper>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Account Information</Typography>
+              <Paper sx={{ p: 3, border: '1px solid #e0e0e0' }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#333' }}>Account Information</Typography>
                 <Divider sx={{ mb: 2 }} />
-                <Box sx={{ mb: 2 }}><Typography variant="body2" color="text.secondary">Email</Typography><Typography variant="body1">{user?.email}</Typography></Box>
-                <Box sx={{ mb: 2 }}><Typography variant="body2" color="text.secondary">Name</Typography><Typography variant="body1">{user?.firstName} {user?.lastName}</Typography></Box>
-                {user?.phone && (<Box sx={{ mb: 2 }}><Typography variant="body2" color="text.secondary">Phone</Typography><Typography variant="body1">{user.phone}</Typography></Box>)}
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Email</Typography>
+                  <Typography variant="body1" sx={{ color: '#333' }}>{user?.email}</Typography>
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Name</Typography>
+                  <Typography variant="body1" sx={{ color: '#333' }}>{user?.firstName} {user?.lastName}</Typography>
+                </Box>
+                {user?.phone && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Phone</Typography>
+                    <Typography variant="body1" sx={{ color: '#333' }}>{user.phone}</Typography>
+                  </Box>
+                )}
               </Paper>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Recent Activity</Typography>
+              <Paper sx={{ p: 3, border: '1px solid #e0e0e0' }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#333' }}>Recent Activity</Typography>
                 <Divider sx={{ mb: 2 }} />
-                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body2" sx={{ color: '#666', textAlign: 'center', py: 4 }}>
                   No recent transactions
                 </Typography>
               </Paper>
             </Grid>
           </Grid>
           
-          {/* YENİ "MY ACCOUNTS" BÖLÜMÜ (SADECE EKLENDİ) */}
+          {/* My Accounts Section */}
           <Box sx={{ mt: 5 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5" fontWeight={500}>My Accounts</Typography>
-              <Button variant="contained" startIcon={<Add />} onClick={() => setIsMethodSelectionOpen(true)}>Add New Account</Button>
+              <Typography variant="h5" sx={{ fontWeight: 600, color: '#333' }}>My Accounts</Typography>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={() => setIsMethodSelectionOpen(true)}
+                sx={{
+                  bgcolor: '#d32f2f',
+                  '&:hover': { bgcolor: '#b71c1c' }
+                }}
+              >
+                Add New Account
+              </Button>
             </Box>
             {accountsLoading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>
