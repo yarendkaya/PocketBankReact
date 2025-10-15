@@ -7,7 +7,6 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Box,
   Checkbox,
   List,
   ListItem,

@@ -22,7 +22,8 @@ import {
   Stack,
   Alert,
   Grid,
-  InputAdornment
+  InputAdornment,
+  Divider
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -32,14 +33,16 @@ import {
   Edit,
   Delete,
   Repeat,
-  Schedule
+  Schedule,
+  TrendingUp,
+  TrendingDown
 } from '@mui/icons-material';
 import dayjs, { Dayjs } from 'dayjs';
-import { 
-  type RecurringTransaction, 
-  RecurringFrequency, 
-  TransactionType, 
-  type Category 
+import {
+  type RecurringTransaction,
+  RecurringFrequency,
+  TransactionType,
+  type Category
 } from '../types';
 
 interface RecurringTransactionsProps {
@@ -61,8 +64,9 @@ interface RecurringFormData {
   startDate: string;
   endDate?: string;
   isActive: boolean;
-  currency: string;   // ✅ added
+  currency: string;
 }
+
 const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
   recurringTransactions,
   categories,
@@ -82,7 +86,7 @@ const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
     frequency: RecurringFrequency.MONTHLY,
     startDate: dayjs().format('YYYY-MM-DD'),
     isActive: true,
-    currency: 'USD'  // ✅ default currency set to USD
+    currency: 'USD'
   });
   const [startDate, setStartDate] = useState<Dayjs>(dayjs());
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
@@ -119,7 +123,7 @@ const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
       } else {
         await onCreateRecurring(data);
       }
-      
+
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save recurring transaction');
@@ -137,7 +141,7 @@ const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
       startDate: recurring.startDate,
       endDate: recurring.endDate,
       isActive: recurring.isActive,
-      currency: recurring.currency  // ✅ set currency when editing
+      currency: recurring.currency
     });
     setStartDate(dayjs(recurring.startDate));
     setEndDate(recurring.endDate ? dayjs(recurring.endDate) : null);
@@ -173,7 +177,7 @@ const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
       frequency: RecurringFrequency.MONTHLY,
       startDate: dayjs().format('YYYY-MM-DD'),
       isActive: true,
-      currency: 'USD'  // ✅ reset to default currency on close
+      currency: 'USD'
     });
     setStartDate(dayjs());
     setEndDate(null);
@@ -195,12 +199,12 @@ const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
     const nextDate = dayjs(date);
     const now = dayjs();
     const diffDays = nextDate.diff(now, 'day');
-    
+
     if (diffDays < 0) return 'Overdue';
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Tomorrow';
     if (diffDays <= 7) return `In ${diffDays} days`;
-    
+
     return nextDate.format('MMM DD, YYYY');
   };
 
@@ -210,7 +214,7 @@ const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h6" fontWeight={600}>
+          <Typography variant="h6" fontWeight={600} sx={{ color: '#333' }}>
             Recurring Transactions
           </Typography>
           <Button
@@ -218,6 +222,10 @@ const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
             startIcon={<Add />}
             onClick={() => setOpen(true)}
             disabled={loading}
+            sx={{
+              bgcolor: '#d32f2f',
+              '&:hover': { bgcolor: '#b71c1c' }
+            }}
           >
             Add Recurring Transaction
           </Button>
@@ -229,137 +237,194 @@ const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
           </Alert>
         )}
 
-        {/* Recurring Transactions List */}
-        <Grid container spacing={2}>
-          {recurringTransactions.map((recurring) => {
-            const category = categories.find(cat => cat.id === recurring.categoryId);
-            const isOverdue = dayjs(recurring.nextExecutionDate).isBefore(dayjs(), 'day');
-            
-            return (
-              <Grid item xs={12} md={6} lg={4} key={recurring.id}>
-                <Card
-                  sx={{
-                    borderLeft: `4px solid ${category?.color || '#ccc'}`,
-                    opacity: recurring.isActive ? 1 : 0.6
-                  }}
-                >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Repeat sx={{ color: category?.color || 'text.secondary' }} />
-                        <Typography variant="subtitle1" fontWeight={600}>
-                          {recurring.description}
-                        </Typography>
-                      </Box>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={recurring.isActive}
-                            onChange={() => handleToggle(recurring.id, recurring.isActive)}
-                            disabled={loading}
-                            size="small"
-                          />
-                        }
-                        label=""
-                        sx={{ m: 0 }}
-                      />
-                    </Box>
-
-                    <Stack spacing={2}>
-                      <Box>
-                        <Typography variant="h6" color={recurring.type === TransactionType.INCOME ? 'success.main' : 'error.main'}>
-                          {recurring.type === TransactionType.INCOME ? '+' : '-'}${recurring.amount.toFixed(2)}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {category?.name || 'Unknown Category'}
-                        </Typography>
-                      </Box>
-
-                      <Stack direction="row" spacing={1}>
-                        <Chip
-                          label={getFrequencyLabel(recurring.frequency)}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                        <Chip
-                          label={recurring.type}
-                          size="small"
-                          color={recurring.type === TransactionType.INCOME ? 'success' : 'error'}
-                          variant="outlined"
-                        />
-                      </Stack>
-
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Schedule fontSize="small" color={isOverdue ? 'error' : 'action'} />
-                        <Typography 
-                          variant="body2" 
-                          color={isOverdue ? 'error.main' : 'text.secondary'}
-                        >
-                          Next: {getNextExecutionDisplay(recurring.nextExecutionDate)}
-                        </Typography>
-                      </Box>
-
-                      {recurring.endDate && (
-                        <Typography variant="body2" color="text.secondary">
-                          Ends: {dayjs(recurring.endDate).format('MMM DD, YYYY')}
-                        </Typography>
-                      )}
-
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 1 }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleEdit(recurring)}
-                          disabled={loading}
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleDelete(recurring.id)}
-                          disabled={loading}
-                          color="error"
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            );
-          })}
-        </Grid>
-
-        {recurringTransactions.length === 0 && (
-          <Paper sx={{ p: 4, textAlign: 'center' }}>
-            <Repeat sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+        {recurringTransactions.length === 0 ? (
+          <Paper sx={{ p: 6, textAlign: 'center', border: '1px solid #e0e0e0' }}>
+            <Repeat sx={{ fontSize: 64, color: '#d32f2f', mb: 2, opacity: 0.7 }} />
+            <Typography variant="h6" color="text.primary" sx={{ mb: 1, fontWeight: 600 }}>
               No Recurring Transactions
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Set up recurring transactions to automate your regular income and expenses.
             </Typography>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => setOpen(true)}
+              sx={{
+                bgcolor: '#d32f2f',
+                '&:hover': { bgcolor: '#b71c1c' }
+              }}
+            >
+              Create Your First Recurring Transaction
+            </Button>
           </Paper>
+        ) : (
+          <Grid container spacing={3}>
+            {recurringTransactions.map((recurring) => {
+              const category = categories.find(cat => cat.id === recurring.categoryId);
+              const isOverdue = dayjs(recurring.nextExecutionDate).isBefore(dayjs(), 'day');
+
+              return (
+                <Grid item xs={12} md={6} lg={4} key={recurring.id}>
+                  <Card
+                    sx={{
+                      border: '1px solid #e0e0e0',
+                      borderLeft: `4px solid ${category?.color || '#ccc'}`,
+                      opacity: recurring.isActive ? 1 : 0.6,
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        boxShadow: 3,
+                        transform: 'translateY(-2px)'
+                      }
+                    }}
+                  >
+                    <CardContent>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                          {recurring.type === TransactionType.INCOME ? (
+                            <TrendingUp sx={{ color: '#4caf50' }} />
+                          ) : (
+                            <TrendingDown sx={{ color: '#f44336' }} />
+                          )}
+                          <Typography variant="subtitle1" fontWeight={600} sx={{ color: '#333' }}>
+                            {recurring.description}
+                          </Typography>
+                        </Box>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={recurring.isActive}
+                              onChange={() => handleToggle(recurring.id, recurring.isActive)}
+                              disabled={loading}
+                              size="small"
+                            />
+                          }
+                          label=""
+                          sx={{ m: 0 }}
+                        />
+                      </Box>
+
+                      <Divider sx={{ mb: 2 }} />
+
+                      <Stack spacing={2}>
+                        <Box>
+                          <Typography
+                            variant="h5"
+                            fontWeight={700}
+                            color={recurring.type === TransactionType.INCOME ? '#4caf50' : '#f44336'}
+                          >
+                            {recurring.type === TransactionType.INCOME ? '+' : '-'}${recurring.amount.toFixed(2)}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                            {category?.name || 'Unknown Category'}
+                          </Typography>
+                        </Box>
+
+                        <Stack direction="row" spacing={1} flexWrap="wrap">
+                          <Chip
+                            label={getFrequencyLabel(recurring.frequency)}
+                            size="small"
+                            sx={{
+                              bgcolor: '#e3f2fd',
+                              color: '#1976d2',
+                              fontWeight: 600
+                            }}
+                          />
+                          <Chip
+                            label={recurring.type}
+                            size="small"
+                            sx={{
+                              bgcolor: recurring.type === TransactionType.INCOME ? '#e8f5e9' : '#ffebee',
+                              color: recurring.type === TransactionType.INCOME ? '#4caf50' : '#f44336',
+                              fontWeight: 600
+                            }}
+                          />
+                        </Stack>
+
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            p: 1.5,
+                            bgcolor: isOverdue ? '#ffebee' : '#f5f5f5',
+                            borderRadius: 1,
+                            border: isOverdue ? '1px solid #ffcdd2' : '1px solid #e0e0e0'
+                          }}
+                        >
+                          <Schedule fontSize="small" sx={{ color: isOverdue ? '#d32f2f' : '#666' }} />
+                          <Box>
+                            <Typography variant="caption" sx={{ color: '#666', display: 'block' }}>
+                              Next Execution
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              fontWeight={600}
+                              color={isOverdue ? '#d32f2f' : '#333'}
+                            >
+                              {getNextExecutionDisplay(recurring.nextExecutionDate)}
+                            </Typography>
+                          </Box>
+                        </Box>
+
+                        {recurring.endDate && (
+                          <Typography variant="caption" color="text.secondary">
+                            Ends on {dayjs(recurring.endDate).format('MMM DD, YYYY')}
+                          </Typography>
+                        )}
+
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 1, borderTop: '1px solid #e0e0e0' }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEdit(recurring)}
+                            disabled={loading}
+                            sx={{
+                              border: '1px solid #e0e0e0',
+                              '&:hover': { bgcolor: '#f5f5f5' }
+                            }}
+                          >
+                            <Edit fontSize="small" sx={{ color: '#666' }} />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDelete(recurring.id)}
+                            disabled={loading}
+                            sx={{
+                              border: '1px solid #ffcdd2',
+                              '&:hover': { bgcolor: '#ffebee' }
+                            }}
+                          >
+                            <Delete fontSize="small" sx={{ color: '#d32f2f' }} />
+                          </IconButton>
+                        </Box>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
         )}
 
         {/* Recurring Transaction Form Dialog */}
         <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-          <DialogTitle>
-            {editingRecurring ? 'Edit Recurring Transaction' : 'Add Recurring Transaction'}
+          <DialogTitle sx={{ borderBottom: '1px solid #e0e0e0' }}>
+            <Typography variant="h6" fontWeight={600}>
+              {editingRecurring ? 'Edit Recurring Transaction' : 'Add Recurring Transaction'}
+            </Typography>
           </DialogTitle>
-          <DialogContent>
+          <DialogContent sx={{ mt: 2 }}>
             <Box component="form" onSubmit={handleSubmit}>
-              <Stack spacing={3} sx={{ mt: 1 }}>
+              <Stack spacing={3}>
                 {/* Transaction Type */}
                 <FormControl fullWidth>
                   <InputLabel>Transaction Type</InputLabel>
                   <Select
                     value={formData.type}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
                       type: e.target.value as TransactionType,
-                      categoryId: '' 
+                      categoryId: ''
                     }))}
                     label="Transaction Type"
                   >
@@ -447,11 +512,11 @@ const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
                   label="End Date (Optional)"
                   value={endDate}
                   onChange={setEndDate}
-                  slotProps={{ 
-                    textField: { 
+                  slotProps={{
+                    textField: {
                       fullWidth: true,
                       helperText: 'Leave empty for indefinite recurrence'
-                    } 
+                    }
                   }}
                 />
 
@@ -468,9 +533,19 @@ const RecurringTransactions: React.FC<RecurringTransactionsProps> = ({
               </Stack>
             </Box>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button onClick={handleSubmit} variant="contained" disabled={loading}>
+          <DialogActions sx={{ borderTop: '1px solid #e0e0e0', px: 3, py: 2 }}>
+            <Button onClick={handleClose} sx={{ color: '#666' }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              variant="contained"
+              disabled={loading}
+              sx={{
+                bgcolor: '#d32f2f',
+                '&:hover': { bgcolor: '#b71c1c' }
+              }}
+            >
               {loading ? 'Saving...' : editingRecurring ? 'Update' : 'Create'}
             </Button>
           </DialogActions>

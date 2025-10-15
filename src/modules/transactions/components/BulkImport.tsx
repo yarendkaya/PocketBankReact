@@ -145,7 +145,11 @@ const BulkImport: React.FC<BulkImportProps> = ({
       setShowPreview(false);
       setParsedData([]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Import failed');
+      setError(
+        typeof err === 'object' && err !== null && 'message' in err
+          ? (err as { message: string }).message
+          : 'Import failed'
+      );
     }
   };
 

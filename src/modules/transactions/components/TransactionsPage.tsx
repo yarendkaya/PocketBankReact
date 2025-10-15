@@ -3,27 +3,39 @@ import {
   Box,
   Container,
   Typography,
-  Tabs,
-  Tab,
   Button,
+  Grid,
+  AppBar,
+  Toolbar,
+  Card,
+  CardContent,
+  Avatar,
   Dialog,
   DialogTitle,
   DialogContent,
   Alert,
   Snackbar,
+  Paper,
+  CircularProgress,
   Fab,
   useTheme,
   useMediaQuery
 } from '@mui/material';
 import {
+  AccountBalance,
   Add,
   Receipt,
   Category,
   Repeat,
-  Upload
+  Upload,
+  TrendingUp,
+  TrendingDown,
+  AccountBalanceWallet
 } from '@mui/icons-material';
 import { ThemeProvider } from '@mui/material/styles';
 import { bankingTheme } from '../../../styles/theme';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 import { useTransactions } from '../hooks/useTransactions';
 import { useCategories } from '../hooks/useCategories';
 import type { TransactionFormData, BulkImportResult, RecurringTransaction } from '../types';
@@ -34,24 +46,12 @@ import CategoryManager from './CategoryManager';
 import BulkImport from './BulkImport';
 import RecurringTransactions from './RecurringTransactions';
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel({ children, value, index }: TabPanelProps) {
-  return (
-    <div hidden={value !== index} role="tabpanel">
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </div>
-  );
-}
-
 const TransactionsPage: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
   const [currentTab, setCurrentTab] = useState(0);
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
@@ -61,7 +61,6 @@ const TransactionsPage: React.FC = () => {
     severity: 'success'
   });
 
-  // Mock recurring transactions data - replace with actual hook when backend is ready
   const [recurringTransactions] = useState<RecurringTransaction[]>([]);
   const [availableTags] = useState<string[]>(['food', 'transport', 'entertainment', 'bills', 'salary', 'shopping']);
 
@@ -87,6 +86,17 @@ const TransactionsPage: React.FC = () => {
     updateCategory,
     deleteCategory
   } = useCategories();
+
+  const stats = {
+    totalIncome: transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amount, 0),
+    totalExpense: transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0),
+    balance: transactions.reduce((sum, t) => t.type === 'INCOME' ? sum + t.amount : sum - t.amount, 0),
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const handleTransactionSubmit = async (data: TransactionFormData) => {
     try {
@@ -141,15 +151,14 @@ const TransactionsPage: React.FC = () => {
   };
 
   const handleBulkImport = async (transactions: TransactionFormData[]): Promise<BulkImportResult> => {
-    // Mock implementation - replace with actual API call
     try {
       const results = await Promise.allSettled(
         transactions.map(transaction => createTransaction(transaction))
       );
-      
+
       const success = results.filter(r => r.status === 'fulfilled').length;
       const failed = results.filter(r => r.status === 'rejected').length;
-      
+
       const errors = results
         .map((result, index) => ({
           row: index + 1,
@@ -186,24 +195,19 @@ const TransactionsPage: React.FC = () => {
     }
   };
 
-  // Mock recurring transaction handlers - implement when backend is ready
   const handleCreateRecurring = async (data: any) => {
-    // Mock implementation
     console.log('Create recurring:', data);
   };
 
   const handleUpdateRecurring = async (id: string, data: any) => {
-    // Mock implementation
     console.log('Update recurring:', id, data);
   };
 
   const handleDeleteRecurring = async (id: string) => {
-    // Mock implementation
     console.log('Delete recurring:', id);
   };
 
   const handleToggleRecurring = async (id: string, isActive: boolean) => {
-    // Mock implementation
     console.log('Toggle recurring:', id, isActive);
   };
 
@@ -212,126 +216,288 @@ const TransactionsPage: React.FC = () => {
     setEditingTransaction(null);
   };
 
-  const tabLabels = [
-    { label: 'Transactions', icon: <Receipt /> },
-    { label: 'Categories', icon: <Category /> },
-    { label: 'Recurring', icon: <Repeat /> },
-    { label: 'Import', icon: <Upload /> }
-  ];
-
   return (
     <ThemeProvider theme={bankingTheme}>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-          <Typography variant="h4" fontWeight={600}>
-            Transactions
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => setShowTransactionForm(true)}
-            disabled={transactionsLoading}
-          >
-            Add Transaction
-          </Button>
+      <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+        {/* Top Bar */}
+        <Box sx={{ bgcolor: '#f5f5f5', borderBottom: '1px solid #e0e0e0' }}>
+          <Container maxWidth="xl">
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Typography variant="body2" sx={{ color: '#666', fontSize: '0.875rem' }}>
+                  Welcome, {user?.firstName}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Avatar sx={{ bgcolor: '#d32f2f', width: 32, height: 32 }}>
+                  {user?.firstName?.[0]}{user?.lastName?.[0]}
+                </Avatar>
+                <Button
+                  startIcon={<Receipt />}
+                  onClick={handleLogout}
+                  size="small"
+                  sx={{ color: '#666' }}
+                >
+                  Logout
+                </Button>
+              </Box>
+            </Box>
+          </Container>
         </Box>
 
-        {(transactionsError || categoriesError) && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {transactionsError || categoriesError}
-          </Alert>
-        )}
+        {/* Main Header */}
+        <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', borderBottom: '1px solid #e0e0e0' }}>
+          <Container maxWidth="xl">
+            <Toolbar sx={{ px: 0, py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                <AccountBalance sx={{ fontSize: 40, color: '#d32f2f', mr: 2 }} />
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#d32f2f', fontSize: '2rem' }}>
+                  PocketBank
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+                <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/dashboard')}>Dashboard</Button>
+                <Button sx={{ color: '#d32f2f', fontWeight: 600, borderBottom: '2px solid #d32f2f' }}>Transactions</Button>
+                <Button sx={{ color: '#333', fontWeight: 500 }}>Accounts</Button>
+                <Button sx={{ color: '#333', fontWeight: 500 }}>Settings</Button>
+              </Box>
+            </Toolbar>
+          </Container>
+        </AppBar>
 
-        {/* Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-          <Tabs
-            value={currentTab}
-            onChange={(_, newValue) => setCurrentTab(newValue)}
-            variant={isMobile ? 'scrollable' : 'standard'}
-            scrollButtons={isMobile ? 'auto' : false}
-          >
-            {tabLabels.map((tab, index) => (
-              <Tab
-                key={index}
-                label={tab.label}
-                icon={tab.icon}
-                iconPosition="start"
-                sx={{ minHeight: 48 }}
-              />
-            ))}
-          </Tabs>
-        </Box>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          {/* Page Header with Stats */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
+              Transactions Overview
+            </Typography>
 
-        {/* Tab Panels */}
-        <TabPanel value={currentTab} index={0}>
-          {/* Transactions Tab */}
-          <TransactionFiltersComponent
-            filters={filters}
-            categories={categories}
-            availableTags={availableTags}
-            onFiltersChange={applyFilters}
-            onClearFilters={clearFilters}
-            loading={transactionsLoading}
-          />
-          
-          <TransactionList
-            transactions={transactions}
-            categories={categories}
-            loading={transactionsLoading}
-            totalCount={pagination.total}
-            page={pagination.page - 1} // Material-UI uses 0-based pagination
-            rowsPerPage={pagination.limit}
-            onPageChange={(page) => fetchTransactions(page + 1)}
-            onRowsPerPageChange={() => {
-              // You might need to implement this in your hook
-              fetchTransactions(1);
-            }}
-            onEditTransaction={handleEditTransaction}
-            onDeleteTransaction={handleDeleteTransaction}
-            onBulkDelete={handleBulkDelete}
-            selectable
-          />
-        </TabPanel>
+            {/* Statistics Cards */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12} sm={4}>
+                <Card sx={{ border: '1px solid #e0e0e0', height: '100%' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <TrendingUp sx={{ color: '#4caf50', mr: 1 }} />
+                      <Typography variant="body2" sx={{ color: '#666' }}>Total Income</Typography>
+                    </Box>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#4caf50' }}>
+                      ${stats.totalIncome.toLocaleString()}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Card sx={{ border: '1px solid #e0e0e0', height: '100%' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <TrendingDown sx={{ color: '#f44336', mr: 1 }} />
+                      <Typography variant="body2" sx={{ color: '#666' }}>Total Expenses</Typography>
+                    </Box>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#f44336' }}>
+                      ${stats.totalExpense.toLocaleString()}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Card sx={{
+                  border: '1px solid #e0e0e0',
+                  background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
+                  color: 'white',
+                  height: '100%'
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <AccountBalanceWallet sx={{ color: 'white', mr: 1 }} />
+                      <Typography variant="body2" sx={{ opacity: 0.9 }}>Net Balance</Typography>
+                    </Box>
+                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                      ${stats.balance.toLocaleString()}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
 
-        <TabPanel value={currentTab} index={1}>
-          {/* Categories Tab */}
-          <CategoryManager
-            categories={categories}
-            onCreateCategory={async (data) => {
-              await createCategory(data);
-            }}
-            onUpdateCategory={async (id, data) => {
-              await updateCategory(id, data);
-            }}
-            onDeleteCategory={deleteCategory}
-            loading={categoriesLoading}
-          />
-        </TabPanel>
+          {/* Error Messages */}
+          {(transactionsError || categoriesError) && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {transactionsError || categoriesError}
+            </Alert>
+          )}
 
-        <TabPanel value={currentTab} index={2}>
-          {/* Recurring Transactions Tab */}
-          <RecurringTransactions
-            recurringTransactions={recurringTransactions}
-            categories={categories}
-            onCreateRecurring={handleCreateRecurring}
-            onUpdateRecurring={handleUpdateRecurring}
-            onDeleteRecurring={handleDeleteRecurring}
-            onToggleRecurring={handleToggleRecurring}
-            loading={false}
-          />
-        </TabPanel>
+          {/* Action Bar */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Button
+                variant={currentTab === 0 ? 'contained' : 'outlined'}
+                startIcon={<Receipt />}
+                onClick={() => setCurrentTab(0)}
+                sx={{
+                  bgcolor: currentTab === 0 ? '#d32f2f' : 'transparent',
+                  color: currentTab === 0 ? 'white' : '#d32f2f',
+                  borderColor: '#d32f2f',
+                  '&:hover': {
+                    bgcolor: currentTab === 0 ? '#b71c1c' : 'rgba(211, 47, 47, 0.1)',
+                    borderColor: '#d32f2f'
+                  }
+                }}
+              >
+                All Transactions
+              </Button>
+              <Button
+                variant={currentTab === 1 ? 'contained' : 'outlined'}
+                startIcon={<Category />}
+                onClick={() => setCurrentTab(1)}
+                sx={{
+                  bgcolor: currentTab === 1 ? '#d32f2f' : 'transparent',
+                  color: currentTab === 1 ? 'white' : '#d32f2f',
+                  borderColor: '#d32f2f',
+                  '&:hover': {
+                    bgcolor: currentTab === 1 ? '#b71c1c' : 'rgba(211, 47, 47, 0.1)',
+                    borderColor: '#d32f2f'
+                  }
+                }}
+              >
+                Categories
+              </Button>
+              <Button
+                variant={currentTab === 2 ? 'contained' : 'outlined'}
+                startIcon={<Repeat />}
+                onClick={() => setCurrentTab(2)}
+                sx={{
+                  bgcolor: currentTab === 2 ? '#d32f2f' : 'transparent',
+                  color: currentTab === 2 ? 'white' : '#d32f2f',
+                  borderColor: '#d32f2f',
+                  '&:hover': {
+                    bgcolor: currentTab === 2 ? '#b71c1c' : 'rgba(211, 47, 47, 0.1)',
+                    borderColor: '#d32f2f'
+                  }
+                }}
+              >
+                Recurring
+              </Button>
+              <Button
+                variant={currentTab === 3 ? 'contained' : 'outlined'}
+                startIcon={<Upload />}
+                onClick={() => setCurrentTab(3)}
+                sx={{
+                  bgcolor: currentTab === 3 ? '#d32f2f' : 'transparent',
+                  color: currentTab === 3 ? 'white' : '#d32f2f',
+                  borderColor: '#d32f2f',
+                  '&:hover': {
+                    bgcolor: currentTab === 3 ? '#b71c1c' : 'rgba(211, 47, 47, 0.1)',
+                    borderColor: '#d32f2f'
+                  }
+                }}
+              >
+                Import
+              </Button>
+            </Box>
+            {currentTab === 0 && (
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={() => setShowTransactionForm(true)}
+                disabled={transactionsLoading}
+                sx={{
+                  bgcolor: '#d32f2f',
+                  '&:hover': { bgcolor: '#b71c1c' }
+                }}
+              >
+                Add Transaction
+              </Button>
+            )}
+          </Box>
 
-        <TabPanel value={currentTab} index={3}>
-          {/* Bulk Import Tab */}
-          <BulkImport
-            onImport={handleBulkImport}
-            loading={transactionsLoading}
-          />
-        </TabPanel>
+          {/* Tab Content */}
+          <Paper sx={{ border: '1px solid #e0e0e0' }}>
+            {/* Transactions Tab */}
+            {currentTab === 0 && (
+              <Box sx={{ p: 3, minHeight: '500px' }}>
+                <TransactionFiltersComponent
+                  filters={filters}
+                  categories={categories}
+                  availableTags={availableTags}
+                  onFiltersChange={applyFilters}
+                  onClearFilters={clearFilters}
+                  loading={transactionsLoading}
+                />
+
+                {transactionsLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <TransactionList
+                    transactions={transactions}
+                    categories={categories}
+                    loading={transactionsLoading}
+                    totalCount={pagination.total}
+                    page={pagination.page - 1}
+                    rowsPerPage={pagination.limit}
+                    onPageChange={(page) => fetchTransactions(page + 1)}
+                    onRowsPerPageChange={() => {
+                      fetchTransactions(1);
+                    }}
+                    onEditTransaction={handleEditTransaction}
+                    onDeleteTransaction={handleDeleteTransaction}
+                    onBulkDelete={handleBulkDelete}
+                    selectable
+                  />
+                )}
+              </Box>
+            )}
+
+            {/* Categories Tab */}
+            {currentTab === 1 && (
+              <Box sx={{ p: 3, minHeight: '500px' }}>
+                <CategoryManager
+                  categories={categories}
+                  onCreateCategory={async (data) => {
+                    await createCategory(data);
+                  }}
+                  onUpdateCategory={async (id, data) => {
+                    await updateCategory(id, data);
+                  }}
+                  onDeleteCategory={deleteCategory}
+                  loading={categoriesLoading}
+                />
+              </Box>
+            )}
+
+            {/* Recurring Transactions Tab */}
+            {currentTab === 2 && (
+              <Box sx={{ p: 3, minHeight: '500px' }}>
+                <RecurringTransactions
+                  recurringTransactions={recurringTransactions}
+                  categories={categories}
+                  onCreateRecurring={handleCreateRecurring}
+                  onUpdateRecurring={handleUpdateRecurring}
+                  onDeleteRecurring={handleDeleteRecurring}
+                  onToggleRecurring={handleToggleRecurring}
+                  loading={false}
+                />
+              </Box>
+            )}
+
+            {/* Bulk Import Tab */}
+            {currentTab === 3 && (
+              <Box sx={{ p: 3, minHeight: '500px' }}>
+                <BulkImport
+                  onImport={handleBulkImport}
+                  loading={transactionsLoading}
+                />
+              </Box>
+            )}
+          </Paper>
+        </Container>
 
         {/* Transaction Form Dialog */}
-        <Dialog 
-          open={showTransactionForm} 
+        <Dialog
+          open={showTransactionForm}
           onClose={handleCloseTransactionForm}
           maxWidth="md"
           fullWidth
@@ -356,7 +522,13 @@ const TransactionsPage: React.FC = () => {
           <Fab
             color="primary"
             aria-label="add transaction"
-            sx={{ position: 'fixed', bottom: 16, right: 16 }}
+            sx={{
+              position: 'fixed',
+              bottom: 16,
+              right: 16,
+              bgcolor: '#d32f2f',
+              '&:hover': { bgcolor: '#b71c1c' }
+            }}
             onClick={() => setShowTransactionForm(true)}
           >
             <Add />
@@ -376,7 +548,7 @@ const TransactionsPage: React.FC = () => {
             {snackbar.message}
           </Alert>
         </Snackbar>
-      </Container>
+      </Box>
     </ThemeProvider>
   );
 };

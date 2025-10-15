@@ -151,16 +151,91 @@ async linkBankAccount(bank: string, username: string, password: string): Promise
         limit: String(limit),
       });
 
-      // Hatalı `linkBankAccount` metodu buradan çıkarıldı.
-
       // Filterları güvenli bir şekilde işle ve URL'e ekle
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && String(value).length > 0) {
           queryParams.append(key, String(value));
         }
       });
-      
+
     return this.request(`/api/transactions?${queryParams.toString()}`);
+  }
+
+  async createTransaction(data: any): Promise<any> {
+    return this.request('/api/transactions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateTransaction(id: string, data: any): Promise<any> {
+    return this.request(`/api/transactions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteTransaction(id: string): Promise<void> {
+    await this.request(`/api/transactions/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Category methods
+  async getCategories(): Promise<any[]> {
+    return this.request('/api/categories');
+  }
+
+  async createCategory(data: any): Promise<any> {
+    return this.request('/api/categories', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateCategory(id: string, data: any): Promise<any> {
+    return this.request(`/api/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    await this.request(`/api/categories/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Recurring transaction methods
+  async getRecurringTransactions(): Promise<any[]> {
+    return this.request('/api/transactions/recurring');
+  }
+
+  async createRecurringTransaction(data: any): Promise<any> {
+    return this.request('/api/transactions/recurring', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRecurringTransaction(id: string, data: any): Promise<any> {
+    return this.request(`/api/transactions/recurring/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRecurringTransaction(id: string): Promise<void> {
+    await this.request(`/api/transactions/recurring/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async toggleRecurringTransaction(id: string, isActive: boolean): Promise<any> {
+    return this.request(`/api/transactions/recurring/${id}/toggle`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isActive }),
+    });
   }
 
 } // <--- Sınıfın bittiği yer

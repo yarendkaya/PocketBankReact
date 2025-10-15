@@ -251,21 +251,18 @@ const Dashboard: React.FC = () => {
                     </Card>
                   </Grid>
                   <Grid item xs={6} sm={3}>
-                    <Card
-                      onClick={() => navigate('/transactions')}
-                      sx={{
-                        textAlign: 'center',
-                        p: 2,
-                        cursor: 'pointer',
-                        transition: 'all 0.3s',
-                        border: '1px solid #e0e0e0',
-                        '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: 2,
-                          borderColor: '#d32f2f'
-                        }
-                      }}
-                    >
+                    <Card sx={{
+                      textAlign: 'center',
+                      p: 2,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                      border: '1px solid #e0e0e0',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: 2,
+                        borderColor: '#d32f2f'
+                      }
+                    }}>
                       <Box sx={{ color: '#d32f2f', mb: 1 }}>
                         <History />
                       </Box>
