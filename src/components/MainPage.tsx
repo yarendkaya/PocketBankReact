@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import {
   Box,
   Container,
@@ -9,57 +9,53 @@ import {
   Breadcrumbs,
   Link,
   Card
-} from '@mui/material'
-import { NavigateNext } from '@mui/icons-material'
+} from '@mui/material';
+import { NavigateNext } from '@mui/icons-material';
+import { Header } from './layout/Header';
+import { HeroSection } from './layout/HeroSection';
+import { QuickActions } from './layout/QuickActions';
+import { SecurityCard } from './layout/SecurityCard';
+import { BankingServices } from './layout/BankingServices';
+import { LoginForm } from './auth/LoginForm';
+import { RegisterForm } from './auth/RegisterForm';
+import { validateLoginForm, validateRegisterForm } from '../utils/validation';
 
-// Layout components
-import { Header } from './layout/Header'
-import { HeroSection } from './layout/HeroSection'
-import { QuickActions } from './layout/QuickActions'
-import { SecurityCard } from './layout/SecurityCard'
-import { BankingServices } from './layout/BankingServices'
-
-// Auth components
-import { LoginForm } from './auth/LoginForm'
-import { RegisterForm } from './auth/RegisterForm'
-
-// Utilities
-import { validateLoginForm, validateRegisterForm } from '../utils/validation'
+interface RegisterData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
+}
 
 const MainPage = () => {
-  const [isLogin, setIsLogin] = useState(true)
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
-  const { login, register } = useAuth()
-  const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const navigate = useNavigate();
+  const { login, register } = useAuth();
 
   const handleLogin = async (email: string, password: string) => {
-    const validationErrors = validateLoginForm(email, password)
-    setErrors(validationErrors)
+    const validationErrors = validateLoginForm(email, password);
+    setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
-      setLoading(true)
+      setLoading(true);
       try {
-        await login({ email, password })
-        navigate('/dashboard')
-      } catch (error: unknown) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Giriş başarısız'
-        setErrors({ general: errorMessage })
+        await login({ email, password });
+        navigate('/dashboard');
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Login failed';
+        setErrors({ general: errorMessage });
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-  }
+  };
 
-  const handleRegister = async (data: {
-    firstName: string
-    lastName: string
-    email: string
-    phone: string
-    password: string
-    confirmPassword: string
-  }) => {
+  const handleRegister = async (data: RegisterData) => {
     const validationErrors = validateRegisterForm(
       data.firstName,
       data.lastName,
@@ -67,23 +63,27 @@ const MainPage = () => {
       data.phone,
       data.password,
       data.confirmPassword
-    )
-    setErrors(validationErrors)
+    );
+    setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
-      setLoading(true)
+      setLoading(true);
       try {
-        await register(data)
-        navigate('/dashboard')
-      } catch (error: unknown) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Kayıt başarısız'
-        setErrors({ general: errorMessage })
+        await register(data);
+        navigate('/dashboard');
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+        setErrors({ general: errorMessage });
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-  }
+  };
+
+  const switchForm = (loginMode: boolean) => {
+    setIsLogin(loginMode);
+    setErrors({});
+  };
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
@@ -98,13 +98,13 @@ const MainPage = () => {
           sx={{ fontSize: '0.875rem' }}
         >
           <Link underline="hover" color="inherit" href="#" sx={{ color: '#666' }}>
-            Ana Sayfa
+            Home
           </Link>
           <Link underline="hover" color="inherit" href="#" sx={{ color: '#666' }}>
-            Dijital Bankacılık
+            Digital Banking
           </Link>
           <Typography color="text.primary" sx={{ fontWeight: 500 }}>
-            İnternet Bankacılığı Girişi
+            Internet Banking Login
           </Typography>
         </Breadcrumbs>
       </Container>
@@ -120,7 +120,7 @@ const MainPage = () => {
                 gutterBottom
                 sx={{ fontWeight: 'bold', color: '#333', mb: 2 }}
               >
-                PocketBank Dijital Bankacılığa Hoş Geldiniz
+                Welcome to PocketBank Digital Banking
               </Typography>
 
               <Typography
@@ -128,9 +128,8 @@ const MainPage = () => {
                 paragraph
                 sx={{ color: '#666', lineHeight: 1.6, mb: 3 }}
               >
-                Modern bankacılığın tüm imkanlarını dijital platformumuzla
-                deneyimleyin. Finansal işlemlerinizi güvenle, her yerden, her zaman
-                yönetin.
+                Experience all the possibilities of modern banking with our digital platform.
+                Manage your financial transactions securely, anywhere, anytime.
               </Typography>
 
               <SecurityCard />
@@ -143,45 +142,45 @@ const MainPage = () => {
             <Box sx={{ position: 'sticky', top: 24 }}>
               {/* Form Selection Tabs */}
               <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid item xs={6} sx={{ display: 'flex' }}>
+                <Grid item xs={6}>
                   <Card
                     elevation={0}
                     sx={{
-                      flex: 1,
-                      p: 1,
+                      p: 1.5,
                       textAlign: 'center',
                       cursor: 'pointer',
                       position: 'relative',
-                      border: isLogin
-                        ? '2px solid #d32f2f'
-                        : '2px solid #e0e0e0',
+                      border: '2px solid',
+                      borderColor: isLogin ? '#d32f2f' : '#e0e0e0',
                       bgcolor: isLogin ? '#fafafa' : 'white',
-                      transition: 'all 0.3s'
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        borderColor: '#d32f2f',
+                        bgcolor: '#fafafa'
+                      }
                     }}
-                    onClick={() => setIsLogin(true)}
+                    onClick={() => switchForm(true)}
                   >
                     <Typography
                       variant="body1"
                       sx={{
                         fontWeight: 'bold',
                         color: isLogin ? '#d32f2f' : '#666',
-                        mb: 0.25,
+                        mb: 0.5,
                         fontSize: '0.95rem'
                       }}
                     >
-                      Giriş Yap
+                      Login
                     </Typography>
                     <Typography
                       variant="caption"
                       sx={{
                         color: '#666',
                         fontSize: '0.7rem',
-                        display: 'block',
-                        textAlign: 'center',
-                        minHeight: 20
+                        display: 'block'
                       }}
                     >
-                      Hesabınız var mı?
+                      Already have an account?
                     </Typography>
                     {isLogin && (
                       <Box
@@ -191,51 +190,52 @@ const MainPage = () => {
                           left: 0,
                           right: 0,
                           height: 3,
-                          bgcolor: '#d32f2f'
+                          bgcolor: '#d32f2f',
+                          borderRadius: '0 0 4px 4px'
                         }}
                       />
                     )}
                   </Card>
                 </Grid>
-                <Grid item xs={6} sx={{ display: 'flex' }}>
+                <Grid item xs={6}>
                   <Card
                     elevation={0}
                     sx={{
-                      flex: 1,
-                      p: 1,
+                      p: 1.5,
                       textAlign: 'center',
                       cursor: 'pointer',
                       position: 'relative',
-                      border: !isLogin
-                        ? '2px solid #d32f2f'
-                        : '2px solid #e0e0e0',
+                      border: '2px solid',
+                      borderColor: !isLogin ? '#d32f2f' : '#e0e0e0',
                       bgcolor: !isLogin ? '#fafafa' : 'white',
-                      transition: 'all 0.3s'
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        borderColor: '#d32f2f',
+                        bgcolor: '#fafafa'
+                      }
                     }}
-                    onClick={() => setIsLogin(false)}
+                    onClick={() => switchForm(false)}
                   >
                     <Typography
                       variant="body1"
                       sx={{
                         fontWeight: 'bold',
                         color: !isLogin ? '#d32f2f' : '#666',
-                        mb: 0.25,
+                        mb: 0.5,
                         fontSize: '0.95rem'
                       }}
                     >
-                      Kayıt Ol
+                      Register
                     </Typography>
                     <Typography
                       variant="caption"
                       sx={{
                         color: '#666',
-                        fontSize: '0.68rem',
-                        display: 'block',
-                        textAlign: 'center',
-                        minHeight: 20
+                        fontSize: '0.7rem',
+                        display: 'block'
                       }}
                     >
-                      PocketBank'ta yeni misiniz?
+                      New to PocketBank?
                     </Typography>
                     {!isLogin && (
                       <Box
@@ -245,7 +245,8 @@ const MainPage = () => {
                           left: 0,
                           right: 0,
                           height: 3,
-                          bgcolor: '#d32f2f'
+                          bgcolor: '#d32f2f',
+                          borderRadius: '0 0 4px 4px'
                         }}
                       />
                     )}
@@ -256,7 +257,11 @@ const MainPage = () => {
               {/* Active Form */}
               <Card elevation={2} sx={{ p: 3, border: '1px solid #e0e0e0' }}>
                 {isLogin ? (
-                  <LoginForm onSubmit={handleLogin} errors={errors} loading={loading} />
+                  <LoginForm
+                    onSubmit={handleLogin}
+                    errors={errors}
+                    loading={loading}
+                  />
                 ) : (
                   <RegisterForm
                     onSubmit={handleRegister}
@@ -270,7 +275,7 @@ const MainPage = () => {
         </Grid>
       </Container>
     </Box>
-  )
-}
+  );
+};
 
-export default MainPage
+export default MainPage;
