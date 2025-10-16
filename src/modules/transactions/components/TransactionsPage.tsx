@@ -218,7 +218,7 @@ const TransactionsPage: React.FC = () => {
 
   return (
     <ThemeProvider theme={bankingTheme}>
-      <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+       <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5', width: '100vw', overflowX: 'hidden' }}>
         {/* Top Bar */}
         <Box sx={{ bgcolor: '#f5f5f5', borderBottom: '1px solid #e0e0e0' }}>
           <Container maxWidth="xl">
@@ -265,7 +265,7 @@ const TransactionsPage: React.FC = () => {
           </Container>
         </AppBar>
 
-        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Box sx={{ maxWidth: '1536px', margin: '0 auto', py: 4, px: { xs: 2, sm: 3 }, width: '100%' }}>
           {/* Page Header with Stats */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
@@ -493,7 +493,7 @@ const TransactionsPage: React.FC = () => {
               </Box>
             )}
           </Paper>
-        </Container>
+          </Box>
 
         {/* Transaction Form Dialog */}
         <Dialog

@@ -134,7 +134,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
   };
 
   return (
-    <Box>
+    <Box sx={{ width: '100%', overflow: 'hidden', boxSizing: 'border-box' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h6" fontWeight={600} sx={{ color: '#333' }}>
           Manage Categories
