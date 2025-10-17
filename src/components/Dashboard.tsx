@@ -205,8 +205,7 @@ const Dashboard: React.FC = () => {
                 <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/budget-planning')}>
                   Budget Planning
                 </Button>
-                <Button sx={{ color: '#333', fontWeight: 500 }}>Accounts</Button>
-                <Button sx={{ color: '#333', fontWeight: 500 }}>Settings</Button>
+                <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/settings')}>Settings</Button>
               </Box>
             </Toolbar>
           </Container>

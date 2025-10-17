@@ -203,7 +203,7 @@ const BudgetPlanningPage: React.FC = () => {
                 <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/dashboard')}>Dashboard</Button>
                 <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/transactions')}>Transactions</Button>
                 <Button sx={{ color: '#d32f2f', fontWeight: 600, borderBottom: '2px solid #d32f2f' }}>Budget Planning</Button>
-                <Button sx={{ color: '#333', fontWeight: 500 }}>Settings</Button>
+                <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/settings')}>Settings</Button>
               </Box>
             </Toolbar>
           </Container>
