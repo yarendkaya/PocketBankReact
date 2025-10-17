@@ -258,6 +258,7 @@ const TransactionsPage: React.FC = () => {
               <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                 <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/dashboard')}>Dashboard</Button>
                 <Button sx={{ color: '#d32f2f', fontWeight: 600, borderBottom: '2px solid #d32f2f' }}>Transactions</Button>
+                <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/budget-planning')}>Budget Planning</Button>
                 <Button sx={{ color: '#333', fontWeight: 500 }}>Accounts</Button>
                 <Button sx={{ color: '#333', fontWeight: 500 }}>Settings</Button>
               </Box>
@@ -540,10 +541,21 @@ const TransactionsPage: React.FC = () => {
           open={snackbar.open}
           autoHideDuration={4000}
           onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => navigate('/budget-planning')}
+              sx={{ fontWeight: 600 }}
+            >
+              Budget Planning
+            </Button>
+          }
         >
           <Alert
             severity={snackbar.severity}
             onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+            sx={{ width: '100%' }}
           >
             {snackbar.message}
           </Alert>
