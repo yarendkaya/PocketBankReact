@@ -27,11 +27,9 @@ import {
   Share,
   PersonAdd,
   Delete,
-  Edit,
   Visibility,
-  VisibilityOff
 } from '@mui/icons-material';
-import type { Budget, SharedBudget } from '../types';
+import type { Budget} from '../types';
 
 interface BudgetSharingProps {
   budget: Budget;
