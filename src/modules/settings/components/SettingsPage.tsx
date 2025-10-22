@@ -17,7 +17,6 @@ import {
 import {
   AccountBalance,
   Logout,
-  ArrowBack,
 } from '@mui/icons-material';
 import { ThemeProvider } from '@mui/material/styles';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -94,17 +93,11 @@ const SettingsPage: React.FC = () => {
 
         <Box sx={{ maxWidth: '1536px', margin: '0 auto', py: 4, px: { xs: 2, sm: 3 }, width: '100%' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-            <Button
-              startIcon={<ArrowBack />}
-              onClick={() => navigate('/dashboard')}
-              sx={{ mr: 2, color: '#666' }}
-            >
-              Back
-            </Button>
             <Typography variant="h4" sx={{ fontWeight: 600 }}>
               Settings
             </Typography>
           </Box>
+        </Box>
 
           <Grid container spacing={3}>
             {/* Profile Settings */}
@@ -234,7 +227,6 @@ const SettingsPage: React.FC = () => {
             </Grid>
           </Grid>
         </Box>
-      </Box>
     </ThemeProvider>
   );
 };
