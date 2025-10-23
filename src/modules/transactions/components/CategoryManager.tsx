@@ -19,13 +19,14 @@ import {
   Grid,
   Chip,
   Alert,
-  Stack
+  Stack,
+  Divider
 } from '@mui/material';
 import {
   Edit,
   Delete,
   Add,
-  Palette,
+  Circle,
   Category as CategoryIcon
 } from '@mui/icons-material';
 import { TransactionType } from '../types';
@@ -47,13 +48,10 @@ interface CategoryFormData {
 }
 
 const defaultColors = [
-  '#e3f2fd', '#f3e5f5', '#e8f5e8', '#fff3e0', '#fce4ec',
-  '#e1f5fe', '#f1f8e9', '#fff8e1', '#fde7f3', '#e8eaf6'
-];
-
-const defaultIcons = [
-  'shopping_cart', 'restaurant', 'local_gas_station', 'home', 'health_and_safety',
-  'school', 'sports_esports', 'movie', 'flight', 'business'
+  '#d32f2f', '#c2185b', '#7b1fa2', '#512da8', '#303f9f',
+  '#1976d2', '#0288d1', '#0097a7', '#00796b', '#388e3c',
+  '#689f38', '#afb42b', '#fbc02d', '#ffa000', '#f57c00',
+  '#e64a19', '#5d4037', '#616161', '#455a64'
 ];
 
 const CategoryManager: React.FC<CategoryManagerProps> = ({
@@ -68,7 +66,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
   const [formData, setFormData] = useState<CategoryFormData>({
     name: '',
     color: defaultColors[0],
-    icon: defaultIcons[0],
+    icon: 'category',
     type: TransactionType.EXPENSE
   });
   const [error, setError] = useState<string>('');
@@ -123,7 +121,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
     setFormData({
       name: '',
       color: defaultColors[0],
-      icon: defaultIcons[0],
+      icon: 'category',
       type: TransactionType.EXPENSE
     });
     setError('');
@@ -136,16 +134,20 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
   };
 
   return (
-    <Box>
+    <Box sx={{ width: '100%', overflow: 'hidden', boxSizing: 'border-box' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h6" fontWeight={600}>
-          Category Management
+        <Typography variant="h6" fontWeight={600} sx={{ color: '#333' }}>
+          Manage Categories
         </Typography>
         <Button
           variant="contained"
           startIcon={<Add />}
           onClick={() => setOpen(true)}
           disabled={loading}
+          sx={{
+            bgcolor: '#d32f2f',
+            '&:hover': { bgcolor: '#b71c1c' }
+          }}
         >
           Add Category
         </Button>
@@ -160,71 +162,109 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
       {/* Categories by Type */}
       <Stack spacing={3}>
         {Object.entries(groupedCategories).map(([type, categoryList]) => (
-          <Paper key={type} sx={{ p: 2 }}>
-            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
-              {type} Categories
-            </Typography>
-            <Grid container spacing={2}>
-              {categoryList.map((category) => (
-                <Grid item xs={12} sm={6} md={4} key={category.id}>
-                  <Card
-                    sx={{
-                      borderLeft: `4px solid ${category.color}`,
-                      position: 'relative'
-                    }}
-                  >
-                    <CardContent sx={{ pb: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <CategoryIcon sx={{ mr: 1, color: category.color }} />
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          {category.name}
-                        </Typography>
-                      </Box>
-                      
-                      {category.isDefault && (
-                        <Chip
-                          label="Default"
-                          size="small"
-                          color="primary"
-                          sx={{ mb: 1 }}
-                        />
-                      )}
+          <Paper key={type} sx={{ p: 3, border: '1px solid #e0e0e0' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <CategoryIcon sx={{ mr: 1, color: '#d32f2f' }} />
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#333' }}>
+                {type === TransactionType.INCOME ? 'Income' : type === TransactionType.EXPENSE ? 'Expense' : 'Transfer'} Categories
+              </Typography>
+              <Chip
+                label={categoryList.length}
+                size="small"
+                sx={{ ml: 2, bgcolor: '#f5f5f5' }}
+              />
+            </Box>
+            <Divider sx={{ mb: 2 }} />
 
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleEdit(category)}
-                          disabled={loading}
-                        >
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        {!category.isDefault && (
+            {categoryList.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 3 }}>
+                <Typography variant="body2" color="text.secondary">
+                  No categories yet. Create one to get started.
+                </Typography>
+              </Box>
+            ) : (
+              <Grid container spacing={2}>
+                {categoryList.map((category) => (
+                  <Grid item xs={12} sm={6} md={4} key={category.id}>
+                    <Card
+                      sx={{
+                        border: '1px solid #e0e0e0',
+                        borderLeft: `4px solid ${category.color}`,
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          boxShadow: 2,
+                          transform: 'translateY(-2px)'
+                        }
+                      }}
+                    >
+                      <CardContent>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                            <Circle sx={{ fontSize: 12, mr: 1, color: category.color }} />
+                            <Typography variant="subtitle2" fontWeight={600} sx={{ color: '#333' }}>
+                              {category.name}
+                            </Typography>
+                          </Box>
+
+                          {category.isDefault && (
+                            <Chip
+                              label="Default"
+                              size="small"
+                              sx={{
+                                bgcolor: '#e3f2fd',
+                                color: '#1976d2',
+                                fontSize: '0.7rem',
+                                height: 20
+                              }}
+                            />
+                          )}
+                        </Box>
+
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
                           <IconButton
                             size="small"
-                            onClick={() => handleDelete(category.id)}
+                            onClick={() => handleEdit(category)}
                             disabled={loading}
-                            color="error"
+                            sx={{
+                              border: '1px solid #e0e0e0',
+                              '&:hover': { bgcolor: '#f5f5f5' }
+                            }}
                           >
-                            <Delete fontSize="small" />
+                            <Edit fontSize="small" sx={{ color: '#666' }} />
                           </IconButton>
-                        )}
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
+                          {!category.isDefault && (
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDelete(category.id)}
+                              disabled={loading}
+                              sx={{
+                                border: '1px solid #ffcdd2',
+                                '&:hover': { bgcolor: '#ffebee' }
+                              }}
+                            >
+                              <Delete fontSize="small" sx={{ color: '#d32f2f' }} />
+                            </IconButton>
+                          )}
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
           </Paper>
         ))}
       </Stack>
 
       {/* Category Form Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {editingCategory ? 'Edit Category' : 'Add New Category'}
+        <DialogTitle sx={{ borderBottom: '1px solid #e0e0e0' }}>
+          <Typography variant="h6" fontWeight={600}>
+            {editingCategory ? 'Edit Category' : 'Add New Category'}
+          </Typography>
         </DialogTitle>
-        <DialogContent>
-          <Stack spacing={3} sx={{ mt: 1 }}>
+        <DialogContent sx={{ mt: 2 }}>
+          <Stack spacing={3}>
             <TextField
               label="Category Name"
               value={formData.name}
@@ -248,20 +288,25 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
 
             {/* Color Selection */}
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Color
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                Choose Color
               </Typography>
               <Grid container spacing={1}>
                 {defaultColors.map((color) => (
                   <Grid item key={color}>
                     <Box
                       sx={{
-                        width: 32,
-                        height: 32,
+                        width: 40,
+                        height: 40,
                         bgcolor: color,
                         borderRadius: 1,
                         cursor: 'pointer',
-                        border: formData.color === color ? '2px solid #000' : '1px solid #ddd'
+                        border: formData.color === color ? '3px solid #333' : '2px solid #e0e0e0',
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.1)',
+                          boxShadow: 2
+                        }
                       }}
                       onClick={() => setFormData(prev => ({ ...prev, color }))}
                     />
@@ -269,33 +314,21 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
                 ))}
               </Grid>
             </Box>
-
-            {/* Icon Selection */}
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Icon
-              </Typography>
-              <Grid container spacing={1}>
-                {defaultIcons.map((icon) => (
-                  <Grid item key={icon}>
-                    <IconButton
-                      sx={{
-                        border: formData.icon === icon ? '2px solid #000' : '1px solid #ddd',
-                        color: formData.color
-                      }}
-                      onClick={() => setFormData(prev => ({ ...prev, icon }))}
-                    >
-                      <Palette />
-                    </IconButton>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSubmit} variant="contained" disabled={loading}>
+        <DialogActions sx={{ borderTop: '1px solid #e0e0e0', px: 3, py: 2 }}>
+          <Button onClick={handleClose} sx={{ color: '#666' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            disabled={loading}
+            sx={{
+              bgcolor: '#d32f2f',
+              '&:hover': { bgcolor: '#b71c1c' }
+            }}
+          >
             {loading ? 'Saving...' : editingCategory ? 'Update' : 'Create'}
           </Button>
         </DialogActions>

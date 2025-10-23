@@ -32,8 +32,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { bankingTheme } from '../styles/theme';
 import { useNavigate } from 'react-router-dom';
 import ApiService from '../services/api';
-
-// GEREKLİ TÜM IMPORT'LAR
 import { useAccounts } from '../modules/accounts/hooks/useAccounts';
 import { AccountCard } from '../modules/accounts/components/AccountCard';
 import { AccountForm } from '../modules/accounts/components/AccountForm';
@@ -48,14 +46,11 @@ interface BalanceData {
 }
 
 const Dashboard: React.FC = () => {
-  // ORİJİNAL STATE'LERİNİZ
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
   const [balance, setBalance] = useState<BalanceData | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // GEREKLİ YENİ STATE'LER VE HOOK'LAR
-  const { accounts, loading: accountsLoading, error: accountsError, createAccount, updateAccount, deleteAccount, refetch: refetchAccounts } = useAccounts();
   const [isMethodSelectionOpen, setIsMethodSelectionOpen] = useState(false);
   const [isManualFormOpen, setIsManualFormOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
@@ -63,7 +58,16 @@ const Dashboard: React.FC = () => {
   const [isAccountSelectionOpen, setIsAccountSelectionOpen] = useState(false);
   const [isLinkingOpen, setIsLinkingOpen] = useState(false);
 
-  // ORİJİNAL FONKSİYONLARINIZ
+  const {
+    accounts,
+    loading: accountsLoading,
+    error: accountsError,
+    createAccount,
+    updateAccount,
+    deleteAccount,
+    refetch: refetchAccounts
+  } = useAccounts();
+
   useEffect(() => {
     loadDashboardData();
   }, []);
@@ -84,18 +88,17 @@ const Dashboard: React.FC = () => {
     navigate('/login');
   };
 
-  // GEREKLİ YENİ FONKSİYONLAR
   const handleEdit = (account: Account) => {
     setEditingAccount(account);
     setIsManualFormOpen(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Bu hesabı silmek istediğinizden emin misiniz?')) {
+    if (window.confirm('Are you sure you want to delete this account?')) {
       await deleteAccount(id);
     }
   };
-  
+
   const handleCloseForm = () => {
     setIsManualFormOpen(false);
     setEditingAccount(null);
@@ -115,33 +118,33 @@ const Dashboard: React.FC = () => {
     if (method === 'manual') {
       setEditingAccount(null);
       setIsManualFormOpen(true);
+    } else if (method === 'link') {
+      setIsLinkingOpen(true);
     }
-    if (method === 'link') {
-   setIsLinkingOpen(true); // Yeni pencereyi aç
- }
   };
+
   const handleLinkBankAccount = async (bank: string, username: string, password: string) => {
     try {
       const result = await ApiService.linkBankAccount(bank, username, password);
-      setLinkedAccounts(result); // 'linkedAccounts' ve 'setLinkedAccounts' burada kullanılıyor
-      setIsLinkingOpen(false);   // 'isLinkingOpen' burada kullanılıyor
-      setIsAccountSelectionOpen(true); // 'isAccountSelectionOpen' burada kullanılıyor
+      setLinkedAccounts(result);
+      setIsLinkingOpen(false);
+      setIsAccountSelectionOpen(true);
     } catch (error) {
-      console.error("Failed to link bank account:", error);
-      alert(`Banka hesabına bağlanırken bir hata oluştu.`);
+      console.error('Failed to link bank account:', error);
+      alert('An error occurred while connecting to the bank account.');
       setIsLinkingOpen(false);
     }
   };
 
   const handleAddSelectedAccounts = async (selectedAccounts: AccountFormData[]) => {
     try {
-        await Promise.all(selectedAccounts.map(acc => createAccount(acc)));
-        setIsAccountSelectionOpen(false); // 'setIsAccountSelectionOpen' burada kullanılıyor
-        refetchAccounts();
-    } catch(error) {
-        console.error("Failed to add selected accounts:", error);
-        alert('Seçilen hesaplar eklenirken bir hata oluştu.');
-        refetchAccounts();
+      await Promise.all(selectedAccounts.map(acc => createAccount(acc)));
+      setIsAccountSelectionOpen(false);
+      refetchAccounts();
+    } catch (error) {
+      console.error('Failed to add selected accounts:', error);
+      alert('An error occurred while adding selected accounts.');
+      refetchAccounts();
     }
   };
 
@@ -162,11 +165,9 @@ const Dashboard: React.FC = () => {
         <Box sx={{ bgcolor: '#f5f5f5', borderBottom: '1px solid #e0e0e0' }}>
           <Container maxWidth="xl">
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <Typography variant="body2" sx={{ color: '#666', fontSize: '0.875rem' }}>
-                  Welcome, {user?.firstName}
-                </Typography>
-              </Box>
+              <Typography variant="body2" sx={{ color: '#666', fontSize: '0.875rem' }}>
+                Welcome, {user?.firstName}
+              </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Avatar sx={{ bgcolor: '#d32f2f', width: 32, height: 32 }}>
                   {user?.firstName?.[0]}{user?.lastName?.[0]}
@@ -195,10 +196,16 @@ const Dashboard: React.FC = () => {
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-                <Button sx={{ color: '#333', fontWeight: 500 }}>Dashboard</Button>
-                <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/transactions')}>Transactions</Button>
-                <Button sx={{ color: '#333', fontWeight: 500 }}>Accounts</Button>
-                <Button sx={{ color: '#333', fontWeight: 500 }}>Settings</Button>
+                <Button sx={{ color: '#d32f2f', fontWeight: 600, borderBottom: '2px solid #d32f2f' }}>
+                  Dashboard
+                </Button>
+                <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/transactions')}>
+                  Transactions
+                </Button>
+                <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/budget-planning')}>
+                  Budget Planning
+                </Button>
+                <Button sx={{ color: '#333', fontWeight: 500 }} onClick={() => navigate('/settings')}>Settings</Button>
               </Box>
             </Toolbar>
           </Container>
@@ -229,7 +236,9 @@ const Dashboard: React.FC = () => {
             </Grid>
             <Grid item xs={12} md={8}>
               <Paper sx={{ p: 3, height: '200px', border: '1px solid #e0e0e0' }}>
-                <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: '#333' }}>Quick Actions</Typography>
+                <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: '#333' }}>
+                  Quick Actions
+                </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={6} sm={3}>
                     <Card sx={{
@@ -251,21 +260,18 @@ const Dashboard: React.FC = () => {
                     </Card>
                   </Grid>
                   <Grid item xs={6} sm={3}>
-                    <Card
-                      onClick={() => navigate('/transactions')}
-                      sx={{
-                        textAlign: 'center',
-                        p: 2,
-                        cursor: 'pointer',
-                        transition: 'all 0.3s',
-                        border: '1px solid #e0e0e0',
-                        '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: 2,
-                          borderColor: '#d32f2f'
-                        }
-                      }}
-                    >
+                    <Card sx={{
+                      textAlign: 'center',
+                      p: 2,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                      border: '1px solid #e0e0e0',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: 2,
+                        borderColor: '#d32f2f'
+                      }
+                    }}>
                       <Box sx={{ color: '#d32f2f', mb: 1 }}>
                         <History />
                       </Box>
@@ -313,9 +319,12 @@ const Dashboard: React.FC = () => {
                 </Grid>
               </Paper>
             </Grid>
+
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: 3, border: '1px solid #e0e0e0' }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#333' }}>Account Information</Typography>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#333' }}>
+                  Account Information
+                </Typography>
                 <Divider sx={{ mb: 2 }} />
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Email</Typography>
@@ -323,19 +332,24 @@ const Dashboard: React.FC = () => {
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Name</Typography>
-                  <Typography variant="body1" sx={{ color: '#333' }}>{user?.firstName} {user?.lastName}</Typography>
+                  <Typography variant="body1" sx={{ color: '#333' }}>
+                    {user?.firstName} {user?.lastName}
+                  </Typography>
                 </Box>
                 {user?.phone && (
-                  <Box sx={{ mb: 2 }}>
+                  <Box>
                     <Typography variant="body2" sx={{ color: '#666', mb: 0.5 }}>Phone</Typography>
                     <Typography variant="body1" sx={{ color: '#333' }}>{user.phone}</Typography>
                   </Box>
                 )}
               </Paper>
             </Grid>
+
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: 3, border: '1px solid #e0e0e0' }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#333' }}>Recent Activity</Typography>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#333' }}>
+                  Recent Activity
+                </Typography>
                 <Divider sx={{ mb: 2 }} />
                 <Typography variant="body2" sx={{ color: '#666', textAlign: 'center', py: 4 }}>
                   No recent transactions
@@ -343,11 +357,13 @@ const Dashboard: React.FC = () => {
               </Paper>
             </Grid>
           </Grid>
-          
+
           {/* My Accounts Section */}
           <Box sx={{ mt: 5 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h5" sx={{ fontWeight: 600, color: '#333' }}>My Accounts</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 600, color: '#333' }}>
+                My Accounts
+              </Typography>
               <Button
                 variant="contained"
                 startIcon={<Add />}
@@ -360,10 +376,32 @@ const Dashboard: React.FC = () => {
                 Add New Account
               </Button>
             </Box>
+
             {accountsLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                <CircularProgress />
+              </Box>
             ) : accountsError ? (
               <Alert severity="error">{accountsError}</Alert>
+            ) : accounts.length === 0 ? (
+              <Paper sx={{ p: 6, textAlign: 'center', border: '1px solid #e0e0e0' }}>
+                <AccountBalance sx={{ fontSize: 64, color: '#d32f2f', mb: 2, opacity: 0.5 }} />
+                <Typography variant="h6" sx={{ mb: 1, color: '#333' }}>No Accounts Yet</Typography>
+                <Typography variant="body2" sx={{ color: '#666', mb: 3 }}>
+                  Get started by adding your first account
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={() => setIsMethodSelectionOpen(true)}
+                  sx={{
+                    bgcolor: '#d32f2f',
+                    '&:hover': { bgcolor: '#b71c1c' }
+                  }}
+                >
+                  Add Your First Account
+                </Button>
+              </Paper>
             ) : (
               <Grid container spacing={3}>
                 {accounts.map(account => (
@@ -376,39 +414,41 @@ const Dashboard: React.FC = () => {
           </Box>
         </Container>
 
-        {/* YENİ PENCERELER (SADECE EKLENDİ) */}
+        {/* Dialogs */}
         <AddAccountMethodDialog
           open={isMethodSelectionOpen}
           onClose={() => setIsMethodSelectionOpen(false)}
           onSelectMethod={handleSelectMethod}
         />
+
         <Dialog open={isManualFormOpen} onClose={handleCloseForm} maxWidth="sm" fullWidth>
-          <DialogTitle>{editingAccount ? 'Edit Account' : 'Add a New Account Manually'}</DialogTitle>
+          <DialogTitle sx={{ borderBottom: '1px solid #e0e0e0' }}>
+            {editingAccount ? 'Edit Account' : 'Add a New Account Manually'}
+          </DialogTitle>
           <DialogContent sx={{ pt: '20px !important' }}>
             <AccountForm
               onSubmit={handleFormSubmit}
               onCancel={handleCloseForm}
               loading={accountsLoading}
-              initialData={editingAccount} 
+              initialData={editingAccount}
             />
           </DialogContent>
         </Dialog>
-        {/* BU BÖLÜMÜ EKLEYİN */}
+
         <LinkBankDialog
-          open={isLinkingOpen} // 'isLinkingOpen' burada kullanılıyor
+          open={isLinkingOpen}
           onClose={() => setIsLinkingOpen(false)}
           onLink={handleLinkBankAccount}
           loading={accountsLoading}
         />
-        
+
         <SelectLinkedAccountsDialog
-          open={isAccountSelectionOpen} // 'isAccountSelectionOpen' burada kullanılıyor
+          open={isAccountSelectionOpen}
           onClose={() => setIsAccountSelectionOpen(false)}
-          accounts={linkedAccounts} // 'linkedAccounts' burada kullanılıyor
+          accounts={linkedAccounts}
           onAdd={handleAddSelectedAccounts}
           loading={accountsLoading}
-        /> 
-
+        />
       </Box>
     </ThemeProvider>
   );
