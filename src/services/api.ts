@@ -151,12 +151,28 @@ async linkBankAccount(bank: string, username: string, password: string): Promise
         limit: String(limit),
       });
 
-      // Filterları güvenli bir şekilde işle ve URL'e ekle
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && String(value).length > 0) {
-          queryParams.append(key, String(value));
-        }
-      });
+      // --- DEĞİŞİKLİK BURADA BAŞLIYOR ---
+     // Artık 'filters' objesi içindeki accountId dahil tüm filtreleri
+     // güvenli bir şekilde URL'e ekliyoruz.
+ 
+    
+     Object.entries(filters).forEach(([key, value]) => {
+       
+
+       if (value !== undefined && value !== null && String(value).length > 0) {
+         
+  
+         if (Array.isArray(value)) {
+           value.forEach(item => {
+             queryParams.append(key, String(item));
+           });
+         } else {
+ 
+           queryParams.append(key, String(value));
+         }
+       }
+     });
+  
 
     return this.request(`/api/transactions?${queryParams.toString()}`);
   }

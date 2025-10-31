@@ -1,14 +1,17 @@
-// src/modules/accounts/components/AccountCard.tsx
+// src/modules/accounts/components/AccountCard.tsx (GÜNCELLENMİŞ HALİ)
 
 import React from 'react';
-import { Card, CardActions, CardContent, Typography, Box, Chip, IconButton } from '@mui/material'; // CardActions ve IconButton eklendi
-import { AccountBalanceWallet, CreditCard, Savings, Edit, Delete } from '@mui/icons-material'; // Edit ve Delete ikonları eklendi
+import { Card, CardActions, CardContent, Typography, Box, Chip, IconButton } from '@mui/material';
+// --- 1. YENİ İKONU EKLE ---
+import { AccountBalanceWallet, CreditCard, Savings, Edit, Delete, History } from '@mui/icons-material';
+// --- 2. YENİ IMPORT'U EKLE ---
+import { useNavigate } from 'react-router-dom';
 import type { Account, AccountType } from '../types';
 
 interface AccountCardProps {
   account: Account;
-  onEdit: (account: Account) => void;   // YENİ PROP
-  onDelete: (id: string) => void;        // YENİ PROP
+  onEdit: (account: Account) => void;
+  onDelete: (id: string) => void;
 }
 
 const getAccountIcon = (type: AccountType) => {
@@ -26,6 +29,15 @@ const getAccountIcon = (type: AccountType) => {
 };
 
 export const AccountCard: React.FC<AccountCardProps> = ({ account, onEdit, onDelete }) => {
+  // --- 3. YENİ HOOK'U ÇAĞIR ---
+  const navigate = useNavigate();
+
+  // --- 4. YENİ FONKSİYONU EKLE ---
+  const handleGoToHistory = () => {
+    // Kullanıcıyı o hesaba özel işlem geçmişi sayfasına yönlendir
+    navigate(`/accounts/${account.id}/transactions`);
+  };
+
   return (
     <Card 
       variant="outlined"
@@ -41,7 +53,8 @@ export const AccountCard: React.FC<AccountCardProps> = ({ account, onEdit, onDel
           'error.main'
       }}
     >
-      <CardContent sx={{ pb: 1 }}> {/* Alt padding azaltıldı */}
+      <CardContent sx={{ pb: 1 }}>
+        {/* ... (Bu bölümün tamamı aynı kalıyor) ... */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6" component="div" fontWeight={600}>
             {account.name}
@@ -56,8 +69,15 @@ export const AccountCard: React.FC<AccountCardProps> = ({ account, onEdit, onDel
         <Chip label={account.accountType} size="small" sx={{ mt: 1 }} />
       </CardContent>
 
-      {/* YENİ EKLENEN BÖLÜM: AKSİYON BUTONLARI */}
+      {/* --- 5. CARD ACTIONS BÖLÜMÜNÜ GÜNCELLE --- */}
       <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
+        
+        {/* YENİ EKLENEN BUTON */}
+        <IconButton aria-label="history" onClick={handleGoToHistory}>
+          <History />
+        </IconButton>
+        
+        {/* MEVCUT BUTONLARIN (değiştirilmedi) */}
         <IconButton aria-label="edit" onClick={() => onEdit(account)}>
           <Edit />
         </IconButton>

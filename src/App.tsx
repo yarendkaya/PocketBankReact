@@ -1,3 +1,5 @@
+// src/App.tsx (GÜNCELLENMİŞ HALİ)
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import MainPage from './components/MainPage'
@@ -14,26 +16,42 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<MainPage />} />
+          
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
             </ProtectedRoute>
           } />
+          
           <Route path="/transactions" element={
             <ProtectedRoute>
               <TransactionsPage />
             </ProtectedRoute>
           } />
+
+          {/* --- YENİ EKLENEN YOL (ROUTE) --- */}
+          <Route 
+            path="/accounts/:accountId/transactions" 
+            element={
+              <ProtectedRoute>
+                <TransactionsPage />
+              </ProtectedRoute>
+            } 
+          />
+          {/* --- YENİ YOLUN SONU --- */}
+
           <Route path="/budget-planning" element={
             <ProtectedRoute>
               <BudgetPlanningPage />
             </ProtectedRoute>
           } />
+          
           <Route path="/settings" element={
             <ProtectedRoute>
               <SettingsPage />
             </ProtectedRoute>
           } />
+          
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

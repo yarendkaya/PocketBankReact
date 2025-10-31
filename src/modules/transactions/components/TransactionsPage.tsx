@@ -1,4 +1,8 @@
+// src/modules/transactions/components/TransactionsPage.tsx (GÜNCELLENMİŞ HALİ)
+
 import React, { useState } from 'react';
+// --- 1. GEREKLİ IMPORT'LARI EKLE ---
+import { useParams } from 'react-router-dom'; 
 import {
   Box,
   Container,
@@ -19,7 +23,8 @@ import {
   CircularProgress,
   Fab,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  IconButton // <- Geri butonu için eklendi
 } from '@mui/material';
 import {
   AccountBalance,
@@ -30,7 +35,8 @@ import {
   Upload,
   TrendingUp,
   TrendingDown,
-  AccountBalanceWallet
+  AccountBalanceWallet,
+  ArrowBack // <- Geri butonu için eklendi
 } from '@mui/icons-material';
 import { ThemeProvider } from '@mui/material/styles';
 import { bankingTheme } from '../../../styles/theme';
@@ -51,6 +57,9 @@ const TransactionsPage: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  
+  // --- 2. URL'DEN accountId'yi OKU ---
+  const { accountId } = useParams<{ accountId: string }>();
 
   const [currentTab, setCurrentTab] = useState(0);
   const [showTransactionForm, setShowTransactionForm] = useState(false);
@@ -64,6 +73,7 @@ const TransactionsPage: React.FC = () => {
   const [recurringTransactions] = useState<RecurringTransaction[]>([]);
   const [availableTags] = useState<string[]>(['food', 'transport', 'entertainment', 'bills', 'salary', 'shopping']);
 
+  // --- 3. accountId'yi useTransactions'a GEÇİR ---
   const {
     transactions,
     loading: transactionsLoading,
@@ -76,7 +86,7 @@ const TransactionsPage: React.FC = () => {
     deleteTransaction,
     applyFilters,
     clearFilters
-  } = useTransactions();
+  } = useTransactions(accountId); // <-- DEĞİŞİKLİK BURADA
 
   const {
     categories,
@@ -87,17 +97,20 @@ const TransactionsPage: React.FC = () => {
     deleteCategory
   } = useCategories();
 
+  // (Mevcut kodun - stats - aynı kalıyor)
   const stats = {
     totalIncome: transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amount, 0),
     totalExpense: transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0),
     balance: transactions.reduce((sum, t) => t.type === 'INCOME' ? sum + t.amount : sum - t.amount, 0),
   };
 
+  // (Mevcut kodun - handleLogout - aynı kalıyor)
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  // (Mevcut kodun - handleTransactionSubmit - aynı kalıyor)
   const handleTransactionSubmit = async (data: TransactionFormData) => {
     try {
       if (editingTransaction) {
@@ -126,11 +139,13 @@ const TransactionsPage: React.FC = () => {
     }
   };
 
+  // (Mevcut kodun - handleEditTransaction - aynı kalıyor)
   const handleEditTransaction = (transaction: any) => {
     setEditingTransaction(transaction);
     setShowTransactionForm(true);
   };
 
+  // (Mevcut kodun - handleDeleteTransaction - aynı kalıyor)
   const handleDeleteTransaction = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this transaction?')) {
       try {
@@ -150,6 +165,7 @@ const TransactionsPage: React.FC = () => {
     }
   };
 
+  // (Mevcut kodun - handleBulkImport - aynı kalıyor)
   const handleBulkImport = async (transactions: TransactionFormData[]): Promise<BulkImportResult> => {
     try {
       const results = await Promise.allSettled(
@@ -178,6 +194,7 @@ const TransactionsPage: React.FC = () => {
     }
   };
 
+  // (Mevcut kodun - handleBulkDelete - aynı kalıyor)
   const handleBulkDelete = async (ids: string[]) => {
     try {
       await Promise.all(ids.map(id => deleteTransaction(id)));
@@ -195,22 +212,19 @@ const TransactionsPage: React.FC = () => {
     }
   };
 
+  // (Mevcut kodun - recurring handlers - aynı kalıyor)
   const handleCreateRecurring = async (data: any) => {
     console.log('Create recurring:', data);
   };
-
   const handleUpdateRecurring = async (id: string, data: any) => {
     console.log('Update recurring:', id, data);
   };
-
   const handleDeleteRecurring = async (id: string) => {
     console.log('Delete recurring:', id);
   };
-
   const handleToggleRecurring = async (id: string, isActive: boolean) => {
     console.log('Toggle recurring:', id, isActive);
   };
-
   const handleCloseTransactionForm = () => {
     setShowTransactionForm(false);
     setEditingTransaction(null);
@@ -219,7 +233,7 @@ const TransactionsPage: React.FC = () => {
   return (
     <ThemeProvider theme={bankingTheme}>
        <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5', width: '100vw', overflowX: 'hidden' }}>
-        {/* Top Bar */}
+        {/* (Mevcut kodun - Top Bar - aynı kalıyor) */}
         <Box sx={{ bgcolor: '#f5f5f5', borderBottom: '1px solid #e0e0e0' }}>
           <Container maxWidth="xl">
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
@@ -245,7 +259,7 @@ const TransactionsPage: React.FC = () => {
           </Container>
         </Box>
 
-        {/* Main Header */}
+        {/* (Mevcut kodun - Main Header - aynı kalıyor) */}
         <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', borderBottom: '1px solid #e0e0e0' }}>
           <Container maxWidth="xl">
             <Toolbar sx={{ px: 0, py: 2 }}>
@@ -266,13 +280,20 @@ const TransactionsPage: React.FC = () => {
         </AppBar>
 
           <Box sx={{ maxWidth: '1536px', margin: '0 auto', py: 4, px: { xs: 2, sm: 3 }, width: '100%' }}>
-          {/* Page Header with Stats */}
+          {/* --- 4. DEĞİŞİKLİK: BAŞLIĞI DİNAMİK HALE GETİR VE GERİ BUTONU EKLE --- */}
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
-              Transactions Overview
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+              {accountId && (
+                <IconButton onClick={() => navigate('/dashboard')}>
+                  <ArrowBack />
+                </IconButton>
+              )}
+              <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                {accountId ? 'Account Transactions' : 'Transactions Overview'}
+              </Typography>
+            </Box>
 
-            {/* Statistics Cards */}
+            {/* (Mevcut kodun - Statistics Cards - aynı kalıyor) */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
               <Grid item xs={12} sm={4}>
                 <Card sx={{ border: '1px solid #e0e0e0', height: '100%' }}>
@@ -321,14 +342,14 @@ const TransactionsPage: React.FC = () => {
             </Grid>
           </Box>
 
-          {/* Error Messages */}
+          {/* (Geri kalan tüm kodların (Tablar, Dialoglar, Snackbar vb.) aynı kalıyor) */}
+          
           {(transactionsError || categoriesError) && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {transactionsError || categoriesError}
             </Alert>
           )}
 
-          {/* Action Bar */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <Button
@@ -412,9 +433,7 @@ const TransactionsPage: React.FC = () => {
             )}
           </Box>
 
-          {/* Tab Content */}
           <Paper sx={{ border: '1px solid #e0e0e0' }}>
-            {/* Transactions Tab */}
             {currentTab === 0 && (
               <Box sx={{ p: 3, minHeight: '500px' }}>
                 <TransactionFiltersComponent
@@ -451,7 +470,6 @@ const TransactionsPage: React.FC = () => {
               </Box>
             )}
 
-            {/* Categories Tab */}
             {currentTab === 1 && (
               <Box sx={{ p: 3, minHeight: '500px' }}>
                 <CategoryManager
@@ -468,7 +486,6 @@ const TransactionsPage: React.FC = () => {
               </Box>
             )}
 
-            {/* Recurring Transactions Tab */}
             {currentTab === 2 && (
               <Box sx={{ p: 3, minHeight: '500px' }}>
                 <RecurringTransactions
@@ -483,7 +500,6 @@ const TransactionsPage: React.FC = () => {
               </Box>
             )}
 
-            {/* Bulk Import Tab */}
             {currentTab === 3 && (
               <Box sx={{ p: 3, minHeight: '500px' }}>
                 <BulkImport
@@ -493,9 +509,8 @@ const TransactionsPage: React.FC = () => {
               </Box>
             )}
           </Paper>
-          </Box>
+        </Box>
 
-        {/* Transaction Form Dialog */}
         <Dialog
           open={showTransactionForm}
           onClose={handleCloseTransactionForm}
@@ -517,7 +532,6 @@ const TransactionsPage: React.FC = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Floating Action Button for Mobile */}
         {isMobile && currentTab === 0 && (
           <Fab
             color="primary"
@@ -535,7 +549,6 @@ const TransactionsPage: React.FC = () => {
           </Fab>
         )}
 
-        {/* Snackbar for notifications */}
         <Snackbar
           open={snackbar.open}
           autoHideDuration={4000}

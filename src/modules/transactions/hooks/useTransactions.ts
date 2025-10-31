@@ -1,8 +1,11 @@
+// src/modules/transactions/hooks/useTransactions.ts (GÜNCELLENMİŞ HALİ)
+
 import { useState, useEffect, useCallback } from 'react';
 import type { Transaction, TransactionFilters, TransactionFormData } from '../types';
 import ApiService from '../../../services/api';
 
-export const useTransactions = (initialFilters?: TransactionFilters) => {
+// --- 1. DEĞİŞİKLİK: Hook'un opsiyonel bir accountId almasını sağla ---
+export const useTransactions = (accountId?: string, initialFilters?: TransactionFilters) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -19,15 +22,18 @@ export const useTransactions = (initialFilters?: TransactionFilters) => {
     setError('');
     
     try {
-      // This will use your existing API service - you can modify the endpoint as needed
-      const response = await ApiService.getTransactions(page, pagination.limit) as any;
+      // --- 2. DEĞİŞİKLİK: Mevcut filtreleri ve yeni accountId'yi birleştir ---
+      const allFilters = { ...filters, accountId };
+
+      // --- 3. DEĞİŞİKLİK: ApiService'e tüm filtreleri gönder ---
+      const response = await ApiService.getTransactions(page, pagination.limit, allFilters) as any;
       
       if (Array.isArray(response)) {
-        // If your API returns just an array
+        // ... (Bu kısım senin kodunla aynı, değiştirilmedi) ...
         setTransactions(response);
         setPagination(prev => ({ ...prev, page, total: response.length }));
       } else {
-        // If your API returns paginated data
+        // ... (Bu kısım senin kodunla aynı, değiştirilmedi) ...
         setTransactions(response.transactions || []);
         setPagination({
           page: response.page || page,
@@ -41,7 +47,12 @@ export const useTransactions = (initialFilters?: TransactionFilters) => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.limit]);
+  // --- 4. DEĞİŞİKLİK: useCallback'in bağımlılıklarına accountId ve filters'ı ekle ---
+  // Bu, URL (accountId) veya filtreler değiştiğinde verinin yeniden çekilmesini sağlar.
+  }, [pagination.limit, filters, accountId]);
+
+  
+  // --- AŞAĞIDAKİ FONKSİYONLARIN HİÇBİRİ DEĞİŞTİRİLMEDİ ---
 
   const createTransaction = async (data: TransactionFormData): Promise<Transaction> => {
     setLoading(true);
@@ -110,7 +121,7 @@ export const useTransactions = (initialFilters?: TransactionFilters) => {
 
   useEffect(() => {
     fetchTransactions();
-  }, [fetchTransactions]);
+  }, [fetchTransactions]); // fetchTransactions'ın bağımlılıkları değiştiğinde (örn: accountId) bu da tetiklenecek.
 
   return {
     transactions,
